@@ -1,0 +1,131 @@
+#!/bin/bash
+MASTER_IP_PUBLIC=$1	#Always needed
+MASTER_IP_LOCAL=$2	#The same if not a setup with local compute nodes
+SSH_KEY_PATH=$3		#Path to local ssh key, usually /home/centos/.ssh/connection_key.pem
+
+export MASTER_IP_PUBLIC
+export MASTER_IP_LOCAL
+
+# Install webserver
+sudo yum install httpd -y
+
+# Configure Webserver
+sudo sed -i "/^#ServerName/c\ServerName $MASTER_IP_PUBLIC:80" /etc/httpd/conf/httpd.conf
+echo 'ServerSignature Off' | sudo tee -a /etc/httpd/conf/httpd.conf > /dev/null
+echo 'ServerTokens Prod' | sudo tee -a /etc/httpd/conf/httpd.conf > /dev/null
+
+# Restart webserver
+sudo systemctl restart httpd
+
+# Install php and extensions required by zabbix
+sudo yum -y install php php-pear php-cgi php-common php-mbstring php-snmp php-gd php-xml php-mysql php-gettext php-bcmath
+
+# Set php timezone
+sudo sed -i "s/^;date.timezone =$/date.timezone = \"Europe\/Berlin\"/" /etc/php.ini
+
+# Restart webserver
+sudo systemctl restart httpd
+
+# Add MariaDB repo
+cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+# Make yum aware of the new repo
+sudo yum makecache fast
+
+# Install MariaDB
+sudo yum install MariaDB-server MariaDB-client -y
+
+# Start and enable MariaDB
+sudo systemctl enable --now mariadb
+
+# Configure MariaDB without interaction
+sudo mysql --user=root <<_EOF_
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+_EOF_
+
+
+# Create Zabbix DB
+export zabbix_db_pass="zabbix"
+sudo mysql --user=root <<MYSQL_SCRIPT
+    create database zabbix;
+    grant all privileges on zabbix.* to zabbix@'localhost' identified by '${zabbix_db_pass}';
+    FLUSH PRIVILEGES;
+MYSQL_SCRIPT
+
+# Install Zabbix repository
+sudo yum install -y https://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-1.el7.noarch.rpm
+
+# Install Zabbix
+sudo yum install -y zabbix-server-mysql zabbix-web-mysql zabbix-agent zabbix-get
+
+# Import initial DB schema
+zcat /usr/share/doc/zabbix-server-mysql*/create.sql.gz | mysql --user=zabbix --password=zabbix --database=zabbix
+
+# Move zabbix frontend config file to correct place before zabbix-server starts (avoids GUI configuration)
+sudo mv /home/centos/zabbix.conf.php /etc/zabbix/web/zabbix.conf.php
+
+# Give correct credentials to fronten config file
+sudo chmod 644 /etc/zabbix/web/zabbix.conf.php
+sudo chown apache:apache /etc/zabbix/web/zabbix.conf.php
+
+# Configure Zabbix Server
+sudo sed -i '/^DBName/c\DBName=zabbix' /etc/zabbix/zabbix_server.conf
+sudo sed -i '/^DBUser/c\DBUser=zabbix' /etc/zabbix/zabbix_server.conf
+sudo sed -i '/^# DBPassword/c\DBPassword=zabbix' /etc/zabbix/zabbix_server.conf
+sudo sed -i "/^# SourceIP=/c\SourceIP=$MASTER_IP_LOCAL" /etc/zabbix/zabbix_server.conf
+
+# Restart webserver and zabbix-server
+sudo systemctl restart httpd zabbix-server
+
+# Enable zabbix-server
+sudo systemctl enable zabbix-server
+
+# Set correct timezone for zabbix frontend (php)
+sudo sed -i '/timezone/c\        php_value date.timezone Europe/Berlin' /etc/httpd/conf.d/zabbix.conf
+
+# Restart webserver
+sudo systemctl restart httpd
+
+# Install pyzabbix
+sudo pip install py-zabbix
+
+# Add new Zabbix hostgroup and action for compute nodes
+python /usr/local/bin/zabbix_api.py
+
+# Configure agent on master node
+sudo sed -i "/^Server\b/c\Server=$MASTER_IP_LOCAL" /etc/zabbix/zabbix_agentd.conf
+sudo sed -i "/^ServerActive/c\ServerActive=$MASTER_IP_LOCAL" /etc/zabbix/zabbix_agentd.conf
+sudo sed -i "/^Hostname=Zabbix server/c\#Hostname=" /etc/zabbix/zabbix_agentd.conf
+
+# Install agent on all compute nodes
+cat /etc/hosts | grep "unicore-compute" | awk '{print $1}' > /home/centos/host_ip_list
+
+wget https://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+
+while read host_ip; do
+	scp -i $SSH_KEY_PATH /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm centos@$host_ip:/home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo rpm -i /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+	scp -i $SSH_KEY_PATH /etc/zabbix/zabbix_agentd.conf centos@$host_ip:/home/centos/zabbix_agentd.conf
+	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo mv /home/centos/zabbix_agentd.conf /etc/zabbix/zabbix_agentd.conf
+	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo systemctl enable zabbix-agent
+	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip sudo systemctl start zabbix-agent
+	ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$host_ip rm -f /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+done </home/centos/host_ip_list
+rm -f /home/centos/host_ip_list
+rm -f /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+
+
+# Enable and start zabbix agent on master node
+sudo systemctl enable zabbix-agent
+sudo systemctl start zabbix-agent
+

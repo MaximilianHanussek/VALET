@@ -1,0 +1,42 @@
+#!/bin/bash
+#title           :delete_node_from_cluster (wrapper script)
+#description     :This script will remove the given node from the cluster
+#author          :Maximilian Hanussek
+#date            :2018-01-31
+#version         :1.0
+#usage           :sh delete_node_from_cluster NODE_NAME_REMOVED SSH_KEY_PATH
+#notes           :Needs two parameter: hostname of the node and path to the ssh key of the node to be removed
+#bash_version    :4.2.46(1)-release
+#=============================================================================================================================================================================================================
+
+NODE_NAME_REMOVED=$1									#Get hostname of the node which has to be removed
+SSH_KEY_PATH=$2										#Get path to the SSH key of the removing VM
+
+MASTER_NODE_IP_PUBLIC="$(cat /etc/hosts | grep master-public | awk {'print $1'})"       #Get master node IP public (unicore-master)
+NODE_IP_REMOVED="$(cat /etc/hosts | grep $NODE_NAME_REMOVED | awk {'print $1'})"	#Get node IP from node to be removed
+
+
+export NODE_NAME_REMOVED
+export SSH_KEY_PATH
+export MASTER_NODE_IP_PUBLIC
+
+
+echo "Removing node from torque"
+delete_node_from_torque $NODE_NAME_REMOVED 						#Run script to remove the node from TORQUE batch system
+        
+echo "Removing node from beegfs filesystem (BeeOND)"
+/opt/beegfs/sbin/beeond-remove-storage-node $NODE_NAME_REMOVED $SSH_KEY_PATH      	#Run script to remove the node from the beegfs filesystem 
+
+echo "Removing node from beeond_nodefile"
+sed -i "/$NODE_IP_REMOVED/d" /home/centos/beeond_nodefile
+
+echo "Updating Zabbix Hosts"
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME_REMOVED sudo systemctl disable zabbix-agent
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME_REMOVED sudo systemctl stop zabbix-agent
+python /usr/local/bin/delete_node_from_zabbix.py
+
+echo "Updating hosts files"
+delete_from_host_file $NODE_NAME_REMOVED $SSH_KEY_PATH					#Run script to update the /etc/hosts files of all nodes and clear it for the deleted node
+
+echo "Updating UNICORE resources"
+update_unicore_resources $SSH_KEY_PATH                                          	#Run script to update the available resources and make UNICORE aware of that 

@@ -1,0 +1,62 @@
+#!/bin/bash
+#title           :add_node_to_cluster
+#description     :This script will add a compute node to the cluster without any downtime
+#author          :Maximilian Hanussek
+#date            :2018-01-31
+#version         :1.0
+#usage           :sh add_node_to_cluster IP_ADDED_HOST NAME_ADDED_HOST SSH_KEY_PATH
+#notes           :Needs three parameter: IP of the new node, hostname of the new node and path to the SSH key of the new node
+#bash_version    :4.2.46(1)-release
+#============================================================================================================================================================================
+
+IP_ADDED_HOST=$1                                                        #Get IP address of new host
+NAME_ADDED_HOST=$2                                                      #Get hostname of new node
+SSH_KEY_PATH=$3                                                         #Get path to ssh key of new node
+
+echo "Wait 20s until SSH connection is available"
+sleep 20								#Wait until host is available per SSH
+
+echo "Updating Hostfiles"
+add_to_host_file $IP_ADDED_HOST $NAME_ADDED_HOST $SSH_KEY_PATH          #Execute add_to_host_file script (/usr/local/bin/) to update the /etc/hosts file
+
+echo "Creating filesystem and mounting volume on new node"
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mkfs.xfs /dev/vdb
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mount /dev/vdb /mnt/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /mnt/
+
+echo "Adding beeond files to new node"
+scp -i $SSH_KEY_PATH /opt/beegfs/sbin/beeond centos@$IP_ADDED_HOST:/home/centos
+scp -i $SSH_KEY_PATH /opt/beegfs/lib/beegfs-ondemand-stoplocal centos@$IP_ADDED_HOST:/home/centos
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mv /home/centos/beeond /opt/beegfs/sbin/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mv /home/centos/beegfs-ondemand-stoplocal /opt/beegfs/lib/
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /opt/beegfs/sbin/beeond
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal
+
+
+MGMT_IP=$(head -n 1 /home/centos/beeond_nodefile)                       #Get IP of the management node of the beegfs filesystem
+echo $MGMT_IP > /home/centos/beeond_nodefile2                           #Write management IP to temporary nodefile
+echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile2                    #Add new node IP to same temporary nodefile
+echo $IP_ADDED_HOST >> /home/centos/beeond_nodefile			#Add new node IP to the general beeond nodefile to keep track on it in case of shutting down the whole filesystem
+
+echo "Adding node to beegfs filesystem"
+/opt/beegfs/sbin/beeond-add-storage-node start -i /home/centos/beeond.statusfile -f /etc/beegfs/ -n /home/centos/beeond_nodefile2 -d /mnt/ -c /beeond/ -a $SSH_KEY_PATH -z centos #Start beeond script and add node to existing beegfs filesystem
+
+rm /home/centos/beeond_nodefile2 					#Delete beeond_nodefile2 as not needed anymore
+
+echo "Adding node to torque cluster"
+add_node_to_torque $NAME_ADDED_HOST $SSH_KEY_PATH                       #Execute add_node_to_torque script (/usr/local/bin) to make torque aware of the new node
+
+echo "Update UNICORE resources"
+update_unicore_resources $SSH_KEY_PATH					#Execute update_unicore_resources (/usr/local/bin) to make UNICORE aware of the new resources
+
+echo "Configure and start Zabbix monitoring"
+wget https://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+scp -i $SSH_KEY_PATH /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm centos@$IP_ADDED_HOST:/home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo rpm -i /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+scp -i $SSH_KEY_PATH /etc/zabbix/zabbix_agentd.conf centos@$IP_ADDED_HOST:/home/centos/zabbix_agentd.conf
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo mv /home/centos/zabbix_agentd.conf /etc/zabbix/zabbix_agentd.conf
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo systemctl enable zabbix-agent
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST sudo systemctl start zabbix-agent
+ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$IP_ADDED_HOST rm -f /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm
+
+rm -f /home/centos/zabbix-agent-4.0.1-1.el7.x86_64.rpm

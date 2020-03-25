@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+NEW_NODE_IP=193.196.29.21
+
+while true; do
+	ssh -q centos@$NEW_NODE_IP exit
+	errorcode="$(echo $?)"
+	if (( "$errorcode" == "0" )); then
+		echo "SSH connection ready"
+		break
+	else
+		echo "Waiting for SSH connection to be ready"
+	fi
+done
