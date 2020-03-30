@@ -1,5 +1,5 @@
 # Virtual UNICORE cluster (VALET) on demand using local IPs for the worker nodes
-Creating a virtual cluster on demand in an OpenStack environment including a UNICORE instance.
+Creating a virtual cluster on demand in an OpenStack environment including a UNICORE instance and the Zabbix monitoring system.
 
 ## Software Stack
 The following software and tools are used to setup the virtual UNICORE cluster:
