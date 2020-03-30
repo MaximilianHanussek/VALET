@@ -48,14 +48,17 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 	else
 		if (( $(echo "$sum_of_weights_start >= $start_threshold" | bc -l) )); then                      #Check if starting weights sum is higher than starting threshold
 			if [[ $cluster_nodes_capacity < $mnc ]]; then
-				echo "Start new node based on last timesteps"                                               #Start new node
-				rm -f /home/centos/.virtual_cluster_stats_start                                             #Remove .virtual_cluster_stats_start as reset
-				exit 0;									    #Stop execution of the script and skip the rest
+				echo "Start new node based on last timesteps"                            	#Start new node
+				echo "start" > /home/centos/.VALET_status					#(Over)Write "start" to file for VALET_balancer_executor on desktop
+				rm -f /home/centos/.virtual_cluster_stats_start                                 #Remove .virtual_cluster_stats_start as reset
+				exit 0;									    	#Stop execution of the script with 0 = success and skip the rest
 			else
-				echo "Maximal number of nodes ($mnc) is already reached."	
+				echo "Maximal number of nodes ($mnc) is already reached."
+				echo "stay" > /home/centos/.VALET_status					#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		else
-			echo "Sum of weights ($sum_of_weights_start) is lower than the threshold ($start_threshold). No new node will be added" 
+			echo "Sum of weights ($sum_of_weights_start) is lower than the threshold ($start_threshold). No new node will be added"
+			echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop 
 		fi 
 	fi
 else                                                                                                    #If .virtual_cluster_stats_start file does not exist
@@ -68,13 +71,15 @@ else                                                                            
         	done
 	
 		if (( $(echo "$sum_of_weights_stop <= $stop_threshold" | bc -l) )); then                        #Check if stopping weights sum is leq than threshold (negative values) 
-			if [[ $cluster_nodes_capacity > $cnc ]]; then                                               #Check if cluster has more nodes than the initial cluster
+			if [[ $cluster_nodes_capacity > $cnc ]]; then                                           #Check if cluster has more nodes than the initial cluster
                 		rm -f /home/centos/.virtual_cluster_stats_stop                                  #Remove .virtual_cluster_stats_stop file
 				echo "Take away one node from the cluster as no jobs are currently running and more nodes than the initial cluster are present" #Remove one node from the cluster
-				exit 0;                                                                                 #Stop execution of the script and skip the rest
+				echo "stop" > /home/centos/.VALET_status                                        #(Over)Write "stop" to file for VALET_balancer_executor on desktop
+				exit 0;                                                                                 #Stop execution of the script with 0 = success and skip the rest
 			else 
-				echo "Initial cluster is already left. Cannot remove further nodes."                    #If initial cluster is already left. Do not remove any nodes
-				rm -f /home/centos/.virtual_cluster_stats_stop                                          #Remove .virtual_cluster_stats_stop file as reset
+				echo "Initial cluster is already left. Cannot remove further nodes."            #If initial cluster is already left. Do not remove any nodes
+				rm -f /home/centos/.virtual_cluster_stats_stop                                  #Remove .virtual_cluster_stats_stop file as reset
+				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		fi
 	fi
@@ -84,7 +89,8 @@ queued_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c Q) 
 running_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c R)    #Get number of running jobs from torque
 
 if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then                              #Check if one of the variables above is zero
-	echo "Nothing to do, number of queued jobs or running jobs is zero"             #If one is zero there is no need to add a new node
+	echo "Nothing to do, number of queued jobs or running jobs is zero"             #If one check is zero there is no need to add a new node
+	echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 
 	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)            #Calculate ratio from runnign jobs through max number of CPUs
 	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then  #Check if running jobs are 0 or ratio from above is lower than threshold
@@ -180,16 +186,20 @@ else
                 else                                                                                #Else difference is larger than threshold rfd1, add new node
 			if [[ $cluster_nodes_capacity < $mnc ]]; then 
                         	echo "Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
+				echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
 			else
 				echo "Maximal number of nodes ($mnc) is already reached"
+				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi 
                 fi
             else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
                 if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
 			if  [[ $cluster_nodes_capacity < $mnc ]]; then
         			echo "There will not be soon some free slots. Start new node."
+				echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
 			else
 				echo "Maximal number of nodes ($mnc) is already reached."
+				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
                 else                                                                                #Else, if time difference is lower than 400s, no new node
              		echo "Ratio is smaller than threshold of $rfr and time difference is smaller than $rfd2 s. No new node will be started "
@@ -206,6 +216,7 @@ else
 		fi
 	else                                                                                            #Else, if queued running ratio is lower then threshold (qrr), no new node is started
 		echo "No new node needs to be added, capacity is sufficient"
+		echo "stay" > /home/centos/.VALET_status                                        	#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                                   #Check if virtual_cluster_stats_start file exists
 			echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
 		else                                                                                        #If .virtual_cluster_stats_start file does not exist                               
