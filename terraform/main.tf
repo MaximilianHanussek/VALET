@@ -333,7 +333,44 @@ block_device {
     }
   }
 
+  provisioner "file" {
+    source = "../VALET_scheduler.service"
+    destination = "/home/centos/VALET_scheduler.service"
 
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../VALET_scheduler.timer"
+    destination = "/home/centos/VALET_scheduler.timer"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+  provisioner "file" {
+    source = "../virtual_cluster_scheduler"
+    destination = "/home/centos/virtual_cluster_scheduler"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
 
 
   provisioner "remote-exec" {
@@ -354,6 +391,9 @@ block_device {
       "sudo mv /home/centos/setup_zabbix /usr/local/bin/setup_zabbix",
       "sudo mv /home/centos/zabbix_api.py /usr/local/bin/zabbix_api.py",
       "sudo mv /home/centos/delete_node_from_zabbix.py /usr/local/bin/delete_node_from_zabbix.py",
+      "sudo mv /home/centos/VALET_scheduler.service /usr/lib/systemd/system/VALET_scheduler.service",
+      "sudo mv /home/centos/VALET_scheduler.timer /usr/lib/systemd/system/VALET_scheduler.timer",
+      "sudo mv /home/centos/virtual_cluster_scheduler /usr/local/bin/virtual_cluster_scheduler",
       "sudo chmod 777 /opt/beegfs/sbin/beeond",
       "sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal",
       "sudo chmod 777 /usr/local/bin/configure_unicore",
@@ -369,7 +409,12 @@ block_device {
       "sudo chmod 777 /opt/beegfs/sbin/beeond-remove-storage-node",
       "sudo chmod 777 /usr/local/bin/setup_zabbix",
       "sudo chmod 777 /usr/local/bin/zabbix_api.py",
-      "sudo chmod 777 /usr/local/bin/delete_node_from_zabbix.py"
+      "sudo chmod 777 /usr/local/bin/delete_node_from_zabbix.py",
+      "sudo chmod 644 /usr/lib/systemd/system/VALET_scheduler.service",
+      "sudo chown root:root /usr/lib/systemd/system/VALET_scheduler.service",
+      "sudo chmod 644 /usr/lib/systemd/system/VALET_scheduler.timer",
+      "sudo chown root:root /usr/lib/systemd/system/VALET_scheduler.timer",
+      "sudo chmod 755 /usr/local/bin/virtual_cluster_scheduler"
     ]
 
     connection {
@@ -401,6 +446,23 @@ block_device {
       "sudo systemctl stop rpcbind.service",
       "sudo systemctl disable rpcbind.service",
       "sudo yum remove rpcbind -y"
+    ]
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
+
+provisioner "remote-exec" {
+    inline = [
+      "sudo systemctl enable VALET_scheduler.timer",
+      "sudo systemctl enable VALET_scheduler.service",
+      "sudo systemctl start VALET_scheduler.timer",
+      "sudo systemctl start VALET_scheduler.service"
     ]
 
     connection {
