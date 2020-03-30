@@ -50,7 +50,7 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 			if [[ $cluster_nodes_capacity < $mnc ]]; then
 				echo "Start new node based on last timesteps"                                               #Start new node
 				rm -f /home/centos/.virtual_cluster_stats_start                                             #Remove .virtual_cluster_stats_start as reset
-				exit 1;									    #Stop execution of the script and skip the rest
+				exit 0;									    #Stop execution of the script and skip the rest
 			else
 				echo "Maximal number of nodes ($mnc) is already reached."	
 			fi
@@ -71,7 +71,7 @@ else                                                                            
 			if [[ $cluster_nodes_capacity > $cnc ]]; then                                               #Check if cluster has more nodes than the initial cluster
                 		rm -f /home/centos/.virtual_cluster_stats_stop                                  #Remove .virtual_cluster_stats_stop file
 				echo "Take away one node from the cluster as no jobs are currently running and more nodes than the initial cluster are present" #Remove one node from the cluster
-				exit 1;                                                                                 #Stop execution of the script and skip the rest
+				exit 0;                                                                                 #Stop execution of the script and skip the rest
 			else 
 				echo "Initial cluster is already left. Cannot remove further nodes."                    #If initial cluster is already left. Do not remove any nodes
 				rm -f /home/centos/.virtual_cluster_stats_stop                                          #Remove .virtual_cluster_stats_stop file as reset
