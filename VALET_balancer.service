@@ -1,0 +1,9 @@
+[Unit]
+Description=Starts the balance executor of the VALET on demand cluster in order to execute the start and stop procedures
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c '/path/to/VALET_balancer_executor 2>&1 >>/var/log/VALET_balancer.log'
+
+[Install]
+WantedBy=multi-user.target
