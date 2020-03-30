@@ -3,7 +3,7 @@ Description=Starts the scheduler of the VALET on demand cluster
 
 [Service]
 Type=simple
-ExecStart=/path/to/virtual_cluster_scheduler >> /var/log/VALET_scheduler.log
+ExecStart=/bin/sh -c '/usr/local/bin/virtual_cluster_scheduler 2>&1 >>/var/log/VALET_scheduler.log'
 
 [Install]
 WantedBy=multi-user.target
