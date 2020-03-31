@@ -372,6 +372,18 @@ block_device {
     }
   }
 
+  provisioner "file" {
+    source = "../VALET_balancer_parser"
+    destination = "/home/centos/VALET_balancer_parser"
+
+    connection {
+      type        = "ssh"
+      private_key = "${file(var.private_key_path)}"
+      user        = "centos"
+      timeout     = "5m"
+      host        = "${self.access_ip_v4}"
+    }
+  }
 
   provisioner "remote-exec" {
     inline = [
@@ -394,6 +406,7 @@ block_device {
       "sudo mv /home/centos/VALET_scheduler.service /usr/lib/systemd/system/VALET_scheduler.service",
       "sudo mv /home/centos/VALET_scheduler.timer /usr/lib/systemd/system/VALET_scheduler.timer",
       "sudo mv /home/centos/virtual_cluster_scheduler /usr/local/bin/virtual_cluster_scheduler",
+      "sudo mv /home/centos/VALET_balancer_parser /usr/local/bin/VALET_balancer_parser",
       "sudo chmod 777 /opt/beegfs/sbin/beeond",
       "sudo chmod 777 /opt/beegfs/lib/beegfs-ondemand-stoplocal",
       "sudo chmod 777 /usr/local/bin/configure_unicore",
@@ -414,7 +427,8 @@ block_device {
       "sudo chown root:root /usr/lib/systemd/system/VALET_scheduler.service",
       "sudo chmod 644 /usr/lib/systemd/system/VALET_scheduler.timer",
       "sudo chown root:root /usr/lib/systemd/system/VALET_scheduler.timer",
-      "sudo chmod 755 /usr/local/bin/virtual_cluster_scheduler"
+      "sudo chmod 755 /usr/local/bin/virtual_cluster_scheduler",
+      "sudo chmod 755 /usr/local/bin/VALET_balancer_parser"
     ]
 
     connection {
