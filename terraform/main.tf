@@ -496,7 +496,8 @@ resource "openstack_compute_instance_v2" "compute" {
   name            = "${var.name_prefix}compute-node-${count.index}"
   flavor_name     = "${var.flavors["compute"]}"
   image_id        = "${openstack_images_image_v2.vuc-image-compute.id}"
-  key_pair        = "vuc_internal_key"
+#  key_pair        = "vuc_internal_key"
+  key_pair        = "${var.internal_key_name}"
   security_groups = "${var.security_groups}"
   network {
     name = "${var.network_compute}"

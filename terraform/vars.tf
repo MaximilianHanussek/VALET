@@ -40,12 +40,15 @@ variable "image_compute" {
 
 
 variable "openstack_key_name" {
-  default = "maximilian-demo"
+  default = "maximilian_demo"
 }
 
 variable "private_key_path" {
   default = "/home/mhanussek/Zertifikate/maximilian-demo.pem"
 }
+
+variable "internal_key_name" {
+  default = "vuc_internal_key"
 
 variable "name_prefix" {
   default = "unicore-"
