@@ -49,6 +49,7 @@ variable "private_key_path" {
 
 variable "internal_key_name" {
   default = "vuc_internal_key"
+}
 
 variable "name_prefix" {
   default = "unicore-"
