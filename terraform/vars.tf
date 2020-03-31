@@ -1,5 +1,5 @@
 variable "beeond_disk_size" {
-  default = 1000
+  default = 10
 }
 
 variable "beeond_storage_backend" {
@@ -9,8 +9,8 @@ variable "beeond_storage_backend" {
 variable "flavors" {
   type = "map"
   default = {
-    "master" = "de.NBI small"
-    "compute" = "de.NBI small"
+    "master" = "de.NBI mini"
+    "compute" = "de.NBI mini"
   }
 }
 

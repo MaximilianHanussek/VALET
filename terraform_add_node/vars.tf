@@ -7,7 +7,7 @@ variable "beeond_storage_backend" {
 }
 
 variable "flavors" {
-  default = "de.NBI medium"
+  default = "de.NBI mini"
 }
 
 
@@ -21,7 +21,7 @@ variable "next_node_number" {
 
 
 variable "openstack_key_name" {
-  default = "maximilian-demo"
+  default = "maximilian_demo"
 }
 
 #variable "initial_cluster_connection_key_private" {
