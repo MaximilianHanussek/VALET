@@ -37,7 +37,7 @@ variable "name_prefix" {
 }
 
 variable "internal_key_name" {
-  default = "vuc_elixir_demo_internal_key"
+  default = "vuc_internal_key"
 }
 
 
