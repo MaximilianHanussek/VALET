@@ -2,7 +2,8 @@
 Description=Timer for VALET_balancer_executor starts every X min (currently 1min), triggering VALET_balancer.service
 
 [Timer]
-OnCalendar=*:00/01
+OnUnitActiveSec=1min
+AccuracySec=1us
 
 [Install]
 WantedBy=timers.target
