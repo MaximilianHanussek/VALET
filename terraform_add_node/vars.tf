@@ -36,6 +36,11 @@ variable "name_prefix" {
   default = "unicore-"
 }
 
+variable "internal_key_name" {
+  default = "vuc_elixir_demo_internal_key"
+}
+
+
 variable "security_groups" {
   default = [
     "virtual-unicore-cluster-public-local-ip"
