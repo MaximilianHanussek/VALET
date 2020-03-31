@@ -1,2 +1,39 @@
 #!/bin/bash
 
+MASTER_NODE_IP_PUBLIC="193.196.20.103"
+#MASTER_NODE_IP_PUBLIC=$(tail -n +$search_line_number terraform/terraform.tfstate | grep "access_ip_v4" | awk -F ': "' '{print $2}' | head -c -3)	#Get public IP of master node
+#SSH_PATH_MASTER=$(awk '/private_key_path/{getline; print}' terraform/vars.tf | awk -F ' = "' '{print $2}' | head -c -2)
+SSH_PATH_MASTER="/home/mhanussek/Zertifikate/maximilian-demo.pem"
+RC_FILE_PATH="/home/mhanussek/VALET_clusters/elixir_demo_VALET_cluster/VALET/elixir-demo-openrc.sh"
+
+
+function VALET_status_check {
+	local status_key_word_transmitted
+	status_key_word_transmitted=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_PATH_MASTER centos@$MASTER_NODE_IP_PUBLIC VALET_balancer_parser)
+
+	if [ -z "$status_key_word_transmitted" ]; then
+		echo "Status request sends empty variable please check services on master node"
+
+	elif [ "$status_key_word_transmitted" == "" ]; then
+		echo "Status request sends empty string please check services on master node"
+
+	elif [ "$status_key_word_transmitted" == "start" ]; then
+		echo "Status request sends command to start a new node"
+
+	elif [ "$status_key_word_transmitted" == "stop" ]; then
+		echo "Status request sends command to stop a node"
+
+	elif [ "$status_key_word_transmitted" == "stay" ]; then
+        	echo "Status request sends command to stay with the current number of nodes"
+
+	elif [ "$status_key_word_transmitted" == "none" ]; then
+		echo "Status request sends information, that the .VALET_status file in /home/centos/ does not exist"
+
+	else
+		echo "Status reqest sends an undefined command: $status_key_word_transmitted"
+	fi
+}
+
+VALET_status_check
+
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -f /home/centos/.VALET_status ]; then
+        status_key_word=$(cat /home/centos/.VALET_status)
+        echo "$status_key_word"
+else
+	echo "none"
+fi
