@@ -19,6 +19,7 @@ In order to setup VALET you need to fulfill the following prerequisites
 - An openrc file with the correct credentials needs to be available (can be donwloaded from the OpenStack Dashboard, Horizon)
 - Installed version of [Terraform](https://www.terraform.io/) (tested with v0.12.10)
 - Access to remote resources (internet)
+- For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7) 
 
 ## Important Remarks
 The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are.
@@ -180,6 +181,23 @@ Please change into the root directory of the repository and run the following sc
 The lastly added node will be chosen to be removed from the cluster. First, no new jobs are allowed to be scheduled on the node marked for removal. After all currently running jobs on this node are finished, the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). In the next step the removed node is deleted from the Zabbix environment. At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
 
 ### 9. Activate automated cluster scaling
+The automated scaling involves an interplay of the master node and the desktop computer where the git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup. The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
+
+Before you copy the files to correct directories you can or have to edit them suiting your needs.
+
+- The `VALET_balancer.timer` service is executed every minute if you want to broaden that edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_balancer.service` and subsequently the `VALET_balancer_executor`script on how often it will be chekcked (every x min) how the cluster status is. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs.
+
+- For the `VALET_balancer.service` please enter the correct path of the Git repository directory where you can also find the `VALET_balancer_executor` for the parameter `WorkingDir` in the `[Service]` section. Further please enter the full path to the `VALET_balancer_executor` file, which should just be to replace `/path/to/` with the `WorkingDir` parameter from above.
+
+- Place the file `VALET_balancer.timer` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
+- Place the file `VALET_balancer.service` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
+
+- Start and enable the systemd scripts if you want to automatically restart it after a reboot
+<pre>sudo systemctl enable VALET_balancer.timer</pre>
+<pre>sudo systemctl enable VALET_balancer.service</pre>
+<pre>sudo systemctl start VALET_balancer.timer</pre>
+<pre>sudo systemctl start VALET_balancer.service</pre>
+
 
 
 
