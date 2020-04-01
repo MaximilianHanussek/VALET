@@ -192,6 +192,15 @@ Before you copy the files to correct directories you can or have to edit them su
 - Place the file `VALET_balancer.timer` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
 - Place the file `VALET_balancer.service` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
 
+- In order to fully automate the up and downsizing procedures it is necessary to provide the OpenStack (API) password directly in the openrc file by commenting in the following lines close to the end of the file:
+<pre>#read -sr OS_PASSWORD_INPUT
+#export OS_PASSWORD=$OS_PASSWORD_INPUT</pre>
+
+and add the following line, replacing `PASSWORD` with your correct password
+<pre>export OS_PASSWORD=PASSWORD</pre>
+
+The reason for that is because if you close the shell (session) or open a new one, your environment variables will be lost and further the password is already saved as plain text as environment variable, so a security benefit is not really given. 
+
 - Start and enable the systemd scripts if you want to automatically restart it after a reboot
 <pre>sudo systemctl enable VALET_balancer.timer</pre>
 <pre>sudo systemctl enable VALET_balancer.service</pre>
