@@ -22,7 +22,9 @@ In order to setup VALET you need to fulfill the following prerequisites
 - For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7) 
 
 ## Important Remarks
-The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are.
+- The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are
+- Currently it is only possible to use the dynamic scaling with a single cluster, multiple are currently not supported
+
 
 ## Latest Images
 This section will list the most up to date and tested images for the master and compute nodes. If you want to use older images for some reasons you will need to change the names in the Terraform`vars.tf` file. 
@@ -181,7 +183,13 @@ Please change into the root directory of the repository and run the following sc
 The lastly added node will be chosen to be removed from the cluster. First, no new jobs are allowed to be scheduled on the node marked for removal. After all currently running jobs on this node are finished, the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). In the next step the removed node is deleted from the Zabbix environment. At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
 
 ### 9. Activate automated cluster scaling
-The automated scaling involves an interplay of the master node and the desktop computer where the Git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup. The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
+The automated scaling involves an interplay of the master node and the desktop computer where the Git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup but some parameters needs to be adapted.
+
+- Login to the master node 
+
+
+
+The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
 
 Before you copy the files to correct directories you can or have to edit them suiting your needs.
 
@@ -207,7 +215,7 @@ The reason for that is because if you close the shell (session) or open a new on
 <pre>sudo systemctl start VALET_balancer.timer</pre>
 <pre>sudo systemctl start VALET_balancer.service</pre>
 
-
+After that your cluster should scale automatically according to the given load. 
 
 
 
