@@ -1,5 +1,5 @@
-# Virtual UNICORE cluster (VALET) on demand using local IPs for the worker nodes
-Creating a virtual cluster on demand in an OpenStack environment including a UNICORE instance and the Zabbix monitoring system.
+# Virtual UNICORE cluster (VALET) on demand with dynamic scaling 
+Creating a virtual cluster on demand in an OpenStack environment including a UNICORE instance and the Zabbix monitoring system. Further is an automated dynamic scaling available, adding and removing nodes from the cluster based on the current resource consumption.
 
 ## Software Stack
 The following software and tools are used to setup the virtual UNICORE cluster:
@@ -19,6 +19,9 @@ In order to setup VALET you need to fulfill the following prerequisites
 - An openrc file with the correct credentials needs to be available (can be donwloaded from the OpenStack Dashboard, Horizon)
 - Installed version of [Terraform](https://www.terraform.io/) (tested with v0.12.10)
 - Access to remote resources (internet)
+
+## Important Remarks
+The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are.
 
 ## Latest Images
 This section will list the most up to date and tested images for the master and compute nodes. If you want to use older images for some reasons you will need to change the names in the Terraform`vars.tf` file. 
@@ -159,7 +162,7 @@ Click on the play button chose the available worjkflow engine and click on finis
 
 For further complex workflows and further explanations on UNICORE we refer to the official documentation which you can find [here](https://www.unicore.eu/documentation/).
 
-### 7. Start and add new node to existing cluster
+### 7. Start and add new node to existing cluster manually
 It might happen that the initial cluster resources are not sufficient for the applied workload and more nodes could solve the problem faster. Or you need some smaller nodes or larger nodes for different kind of workloads. For this case we provide a mechanism that will automatically start a new node (via terraform). Add the new 
 node to the already existing BeeOND file system and also make it available as a resource for the batch system (TORQUE).
 and for UNICORE and also makes Zabbix aware of the new available resources. 
@@ -169,7 +172,19 @@ In order to add a new node you only have to go in the root repository directory 
 After some minutes you will have a new node added to your existng cluster.
 The new node is also added to the resources of the initial cluster. This means terraform is still tracking the whole cluster and not the intital cluster and added nodes. This implementation allows you to destroy the whole cluster without any thoughts about the added and removed nodes.  
 
-### 8. Resize whole BeeOND filesystem
+### 8. Remove a node from the cluster manually
+For the case you want to free some resources and want to downgrade your current cluster we also provide a removing procedure.
+Please change into the root directory of the repository and run the following script:
+<pre>sh stop_node /path/to/rc/file</pre>
+
+The lastly added node will be chosen to be removed from the cluster. First, no new jobs are allowed to be scheduled on the node marked for removal. After all currently running jobs on this node are finished, the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). In the next step the removed node is deleted from the Zabbix environment. At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
+
+### 9. Activate automated cluster scaling
+
+
+
+
+### 10. Resize whole BeeOND filesystem
 In some cases it can be necessary to resize the shared filesystem used by the virtual cluster. That can be the case if the first idea of the necessary total size has been guessed to small or the workload has changed. It is possible to do this by following the subsequent steps. This guide is focused on an OpenStack cloud environment if you are using an other environment have a look how to resize volumes in that environment.
 
 0. Starting situation: You have a cluster with one master node and two compute nodes, each with a Cinder Volume with a capacity of 100GB (in total 300GB). Now you want to expand the storage capacity to 1TB per volume (in total 3TB).
@@ -191,26 +206,3 @@ You can check in beforehand if the volume has been attached to the same device p
 So you need to this 3 times in this example. Depending on the size of the volumes it can take some time, so please be patient.
 9. In the final step you can start the shared filesystem by running the following command:
 <pre>beeond start -i /home/centos/beeond.statusfile -n /home/centos/beeond_nodefile -d /mnt/ -c /beeond/ -a /home/centos/.ssh/connection_key.pem -z centos</pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-### 9. Remove a node from the cluster
-For the case you want to free some resources and want to downgrade your current cluster we also provide a removing procedure.
-Please change into the root directory of the repository and run the following script:
-<pre>sh stop_node /path/to/rc/file</pre>
-
-The lastly added node will be chosen to be removed from the cluster. First, no new jobs are allowed to be scheduled on the node marked for removal. After all currently running jobs on this node are finished, the node is removed from TORQUE. In the next step the node is removed from the BeeOND shared file system. First no new data has to be written to the volume of this node. Then all the data distributed on this node is migrated to the other nodes (if possible, means enough capacity is left). In the next step the removed node is deleted from the Zabbix environment. At the end the node is deleted from the host file on the master node and therefore completely decoupled. As a final step the resources available to UNICORE are updated. At the end the VM and its attached Cinder volume are destroyed. Please enter the corresponding rc file password if you are asked for it.
-
-
-
-
