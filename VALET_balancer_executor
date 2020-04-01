@@ -23,9 +23,11 @@ function VALET_status_check {
 
 	elif [ "$status_key_word_transmitted" == "start" ]; then								#Check for keyword start as answer
 		echo "$logtime Status request sends command to start a new node"
+		sh start_up_new_node $RC_FILE_PATH
 
 	elif [ "$status_key_word_transmitted" == "stop" ]; then									#Check for keyword stop as answer
 		echo "$logtime Status request sends command to stop a node"
+		sh stop_node $RC_FILE_PATH
 
 	elif [ "$status_key_word_transmitted" == "stay" ]; then									#Check for keyword stay as answer
         	echo "$logtime Status request sends command to stay with the current number of nodes"
