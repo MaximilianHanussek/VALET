@@ -186,7 +186,7 @@ The lastly added node will be chosen to be removed from the cluster. First, no n
 The automated scaling involves an interplay of the master node and the desktop computer where the Git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup but some parameters needs to be adapted.
 
 - Login to the master node 
-
+TODO
 
 
 The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
