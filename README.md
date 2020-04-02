@@ -19,7 +19,8 @@ In order to setup VALET you need to fulfill the following prerequisites
 - An openrc file with the correct credentials needs to be available (can be donwloaded from the OpenStack Dashboard, Horizon)
 - Installed version of [Terraform](https://www.terraform.io/) (tested with v0.12.10)
 - Access to remote resources (internet)
-- For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7) 
+- Minimal OpenStack quota allowing for 3 instances and 3 volumes, if using the automated scaling with default values, 5 instances and 5 volumes would be required
+- For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7)
 
 ## Important Remarks
 - The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are
@@ -227,21 +228,20 @@ and restart the timer
 - rfr: running finished ratio relates to values (floating) calculated by the mean walltime of running jobs divided by the mean walltime of finished jobs
 - rfd1: running finished difference relates to values (in seconds) calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs. **Keep rfd1 always larger than rfd2 for algorithmic reasons**. 
 - rfd2: running finished difference like rfd1 (in seconds). **Keep rfd2 always smaller than rfd1**.
+- rCcr: running CPU capacity ratio relates to values (float) calculated by the number of running jobs divided through the total number of available CPU cores in the cluster.
+- cnc: Lower limit of remaining compute nodes. Default value is 2 so the initial setup would always remain, you can higher the value if you want a higher number of nodes always available. **Do not use less than 2 for algorithmic reasons, meaning the initial cluster of master and two compute nodes needs to be remain.**
+- mnc: Upper limit of number of total compute nodes. Default value is 4, so 2 additional compute nodes would be added maximaly to the initial cluster with the value of 4.
+- start_threshold: If the sum of the weights collected over time is higher/equal than this threshold a new node is started.
+- stop_threshold:  If the sum of weigths is going in the negative direction (by W5), and is lower than this threshold a node will be stopped.  
 
 
- 
- 
- 
-
-
-
-
-
-
-
+### Desktop settings
 The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
 
 Before you copy the files to correct directories you can or have to edit them suiting your needs.
+
+
+- For the `virtual_cluster_scheduler` file you find under `/usr/local/bin/` please enter the maximal **compute node** number, which is handled by the `mnc` parameter. Per default this is set to 4. So if you start the initial cluster 3 instances and 3 volumes would be necessary regarding your assigned OpenStack quota. If the default values of the scheduler are used and the OpenStack project is just used for the virtual cluster an instance quota of 5 and 5 volumes would be required. If you have and want more resources please adjust the entered value to your needs.
 
 - The `VALET_balancer.timer` service is executed every minute if you want to broaden that, edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_balancer.service` and subsequently the `VALET_balancer_executor`script on how often it will be chekcked (every x min) how the cluster status is. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs.
 
