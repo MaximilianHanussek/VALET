@@ -215,9 +215,11 @@ and restart the timer
 
 - W2: Will be used if the mean walltime of running jobs divided by the mean walltime of finished jobs (running/finished mean time ratio) (still staying in the queue) is larger than 1.0
 
-- W3: Will be used if the running/finished mean time ratio is equal/larger than the corresponding threshold (defined with `rfr`) but equal/lower than the running finished difference threshold (defined with `rfd1`, in seconds). 
+- W3: Will be used if the running/finished mean time ratio is equal/larger than the corresponding threshold (defined with `rfr`) but equal/lower than the running/finished difference threshold (defined with `rfd1`, in seconds). The running/finished difference is calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs.
 
+- W4: Will be used if the running/finished mean time ratio is smaller than the corresponding threshold (rfr) and smaller than the second threshold for the running/finished difference (defined with rfd2).
 
+- W5: Will be used if the number of running jobs is zero or the number of running jobs divided by the maximum number of available cores (running/CPU capacity ratio). The value needs to be **negative** as this is an indicator that the cluster might have unused resources.  
  
  
 
