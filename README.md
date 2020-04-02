@@ -185,8 +185,43 @@ The lastly added node will be chosen to be removed from the cluster. First, no n
 ### 9. Activate automated cluster scaling
 The automated scaling involves an interplay of the master node and the desktop computer where the Git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup but some parameters needs to be adapted.
 
-- Login to the master node 
-TODO
+#### Parameter tuning
+**For the following steps you will need to be logged in to the master node** 
+
+- Change the time finished jobs stay in the queue, to enlarge the knowledge of the VALET scheduler and make better decisions.
+In order to change the value from the default value (300s), please do the following:
+Change to the root user
+<pre>sudo su -</pre>
+
+And set the value to your needs, suggestion would be 1hour (3600 seconds)
+<pre>qmgr -c 'set server keep_completed =3600'</pre>
+
+If you need more or less time feel free to adjust this value.
+
+- Change the `VALET_scheduler.timer` execution intervall
+The `VALET_scheduler.timer` service is currently executed every minute if you want to broaden that, edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_scheduler.service` and subsequently the `virtual_cluster_scheduler`script on how often the curent resource consumption is checked. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs for example with the following command:
+<pre>sudo vim /usr/lib/systemd/system/VALET_scheduler.timer</pre>
+
+If you change this parameter please restart the systemd daemon:
+<pre>sudo systemctl daemon-reload</pre>
+ 
+and restart the timer
+<pre>sudo systemctl restart VALET_scheduler.timer</pre>
+ 
+-  The VALET scheduler comes with a set of parameters that can be edited to adjust the up and down scaling of cluster nodes. All parameters can be edited in the file `virtual_cluster_scheduler` file under `/usr/local/bin/` and are explained in the following.
+
+**Weights**
+The weigths are used if no direct decisssion of starting or stoping nodes has been made.
+
+
+
+ 
+ 
+
+
+
+
+
 
 
 The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
