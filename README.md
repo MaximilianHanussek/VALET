@@ -219,7 +219,17 @@ and restart the timer
 
 - W4: Will be used if the running/finished mean time ratio is smaller than the corresponding threshold (rfr) and smaller than the second threshold for the running/finished difference (defined with rfd2).
 
-- W5: Will be used if the number of running jobs is zero or the number of running jobs divided by the maximum number of available cores (running/CPU capacity ratio). The value needs to be **negative** as this is an indicator that the cluster might have unused resources.  
+- W5: Will be used if the number of running jobs is zero or the number of running jobs divided by the maximum number of available cores (running/CPU capacity ratio). The value needs to be **negative** as this is an indicator that the cluster might have unused resources.
+
+**Thresholds** The thresholds are used to make certain decisions based on the fact if a given score is lower, higher or equal to one of the given thresholds
+
+- qrr: queuing running ratio relates to values (floating) calculated by the number of queued jobs divided by the number of finished jobs
+- rfr: running finished ratio relates to values (floating) calculated by the mean walltime of running jobs divided by the mean walltime of finished jobs
+- rfd1: running finished difference relates to values (in seconds) calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs. **Keep rfd1 always larger than rfd2 for algorithmic reasons**. 
+- rfd2: running finished difference like rfd1 (in seconds). **Keep rfd2 always smaller than rfd1**.
+
+
+ 
  
  
 
