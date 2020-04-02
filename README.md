@@ -210,9 +210,12 @@ and restart the timer
  
 -  The VALET scheduler comes with a set of parameters that can be edited to adjust the up and down scaling of cluster nodes. All parameters can be edited in the file `virtual_cluster_scheduler` file under `/usr/local/bin/` and are explained in the following.
 
-**Weights**
-The weigths are used if no direct decisssion of starting or stoping nodes has been made.
+**Weights**:The weigths are used if no direct decisssion of starting or stoping nodes has been made.
+- W1: Will be used if the number of queued jobs divided by the number of finished jobs is lower than the threshold (defined with variable `qrr`)
 
+- W2: Will be used if the mean walltime of running jobs divided by the mean walltime of finished jobs (running/finished mean time ratio) (still staying in the queue) is larger than 1.0
+
+- W3: Will be used if the running/finished mean time ratio is equal/larger than the corresponding threshold (defined with `rfr`) but equal/lower than the running finished difference threshold (defined with `rfd1`, in seconds). 
 
 
  
