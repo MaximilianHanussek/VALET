@@ -228,7 +228,7 @@ else
 				fi 
 			fi
 			else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
-                if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
+				if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
 					if  [[ $cluster_nodes_capacity < $mnc ]]; then
         				echo "$logtime There will not be soon some free slots. Start new node."
 						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
