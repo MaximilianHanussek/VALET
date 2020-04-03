@@ -19,7 +19,8 @@ In order to setup VALET you need to fulfill the following prerequisites
 - An openrc file with the correct credentials needs to be available (can be donwloaded from the OpenStack Dashboard, Horizon)
 - Installed version of [Terraform](https://www.terraform.io/) (tested with v0.12.10)
 - Access to remote resources (internet)
-- For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7) 
+- Minimal OpenStack quota allowing for 3 instances and 3 volumes, if using the automated scaling with default values, 5 instances and 5 volumes would be required
+- For the automated scaling a Linux based (systemd) desktop computer is required (tested with CentOS 7)
 
 ## Important Remarks
 - The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are
@@ -185,13 +186,62 @@ The lastly added node will be chosen to be removed from the cluster. First, no n
 ### 9. Activate automated cluster scaling
 The automated scaling involves an interplay of the master node and the desktop computer where the Git repo has been downloaded to. The services running on the master node are already installed and started during the initial cluster setup but some parameters needs to be adapted.
 
-- Login to the master node 
-TODO
+#### Parameter tuning
+**For the following steps you will need to be logged in to the master node** 
+
+- Change the time finished jobs stay in the queue, to enlarge the knowledge of the VALET scheduler and make better decisions.
+In order to change the value from the default value (300s), please do the following:
+Change to the root user
+<pre>sudo su -</pre>
+
+And set the value to your needs, suggestion would be 1hour (3600 seconds)
+<pre>qmgr -c 'set server keep_completed =3600'</pre>
+
+If you need more or less time feel free to adjust this value.
+
+- Change the `VALET_scheduler.timer` execution intervall
+The `VALET_scheduler.timer` service is currently executed every minute if you want to broaden that, edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_scheduler.service` and subsequently the `virtual_cluster_scheduler`script on how often the curent resource consumption is checked. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs for example with the following command:
+<pre>sudo vim /usr/lib/systemd/system/VALET_scheduler.timer</pre>
+
+If you change this parameter please restart the systemd daemon:
+<pre>sudo systemctl daemon-reload</pre>
+ 
+and restart the timer
+<pre>sudo systemctl restart VALET_scheduler.timer</pre>
+ 
+-  The VALET scheduler comes with a set of parameters that can be edited to adjust the up and down scaling of cluster nodes. All parameters can be edited in the file `virtual_cluster_scheduler` file under `/usr/local/bin/` and are explained in the following.
+
+**Weights**:The weigths are used if no direct decisssion of starting or stoping nodes has been made.
+- W1: Will be used if the number of queued jobs divided by the number of finished jobs is lower than the threshold (defined with variable `qrr`)
+
+- W2: Will be used if the mean walltime of running jobs divided by the mean walltime of finished jobs (running/finished mean time ratio) (still staying in the queue) is larger than 1.0
+
+- W3: Will be used if the running/finished mean time ratio is equal/larger than the corresponding threshold (defined with `rfr`) but equal/lower than the running/finished difference threshold (defined with `rfd1`, in seconds). The running/finished difference is calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs.
+
+- W4: Will be used if the running/finished mean time ratio is smaller than the corresponding threshold (rfr) and smaller than the second threshold for the running/finished difference (defined with rfd2).
+
+- W5: Will be used if the number of running jobs is zero or the number of running jobs divided by the maximum number of available cores (running/CPU capacity ratio). The value needs to be **negative** as this is an indicator that the cluster might have unused resources.
+
+**Thresholds** The thresholds are used to make certain decisions based on the fact if a given score is lower, higher or equal to one of the given thresholds
+
+- qrr: queuing running ratio relates to values (floating) calculated by the number of queued jobs divided by the number of finished jobs
+- rfr: running finished ratio relates to values (floating) calculated by the mean walltime of running jobs divided by the mean walltime of finished jobs
+- rfd1: running finished difference relates to values (in seconds) calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs. **Keep rfd1 always larger than rfd2 for algorithmic reasons**. 
+- rfd2: running finished difference like rfd1 (in seconds). **Keep rfd2 always smaller than rfd1**.
+- rCcr: running CPU capacity ratio relates to values (float) calculated by the number of running jobs divided through the total number of available CPU cores in the cluster.
+- cnc: Lower limit of remaining compute nodes. Default value is 2 so the initial setup would always remain, you can higher the value if you want a higher number of nodes always available. **Do not use less than 2 for algorithmic reasons, meaning the initial cluster of master and two compute nodes needs to be remain.**
+- mnc: Upper limit of number of total compute nodes. Default value is 4, so 2 additional compute nodes would be added maximaly to the initial cluster with the value of 4.
+- start_threshold: If the sum of the weights collected over time is higher/equal than this threshold a new node is started.
+- stop_threshold:  If the sum of weigths is going in the negative direction (by W5), and is lower than this threshold a node will be stopped.  
 
 
+### Desktop settings
 The required services and software, included in the Git repository, on the desktop site needs to be installed as following:
 
 Before you copy the files to correct directories you can or have to edit them suiting your needs.
+
+
+- For the `virtual_cluster_scheduler` file you find under `/usr/local/bin/` please enter the maximal **compute node** number, which is handled by the `mnc` parameter. Per default this is set to 4. So if you start the initial cluster 3 instances and 3 volumes would be necessary regarding your assigned OpenStack quota. If the default values of the scheduler are used and the OpenStack project is just used for the virtual cluster an instance quota of 5 and 5 volumes would be required. If you have and want more resources please adjust the entered value to your needs.
 
 - The `VALET_balancer.timer` service is executed every minute if you want to broaden that, edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_balancer.service` and subsequently the `VALET_balancer_executor`script on how often it will be chekcked (every x min) how the cluster status is. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs.
 
