@@ -192,41 +192,41 @@ else
 		if (( $(echo "$running_finished_ratio > 1.0" | bc -l) )); then                      #Check if time ratio is greater than 1
         		echo "$logtime There should be soon some free slots. Wait to start new node"
 			if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Further check if .virtual_cluster_stats_start file exists
-                echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start                  #If it exists add weight to .virtual_cluster_stats_start file
-		echo "$logtime W2 is added"
-            else
-                echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start                   #If it does not exist create the file and add weight
-		echo "$logtime weight W2 is added"
+				echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start                  #If it exists add weight to .virtual_cluster_stats_start file
+				echo "$logtime W2 is added"
+            		else
+				echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start                   #If it does not exist create the file and add weight
+				echo "$logtime weight W2 is added"
 				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if .virtual_cluster_stats_stop file exists
-                    rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove .virtual_cluster_stats_stop file as reset
-        	    fi
-            fi
+                    			rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove .virtual_cluster_stats_stop file as reset
+        	    		fi
+            		fi
 		else											                                    #Else, if running_finished_ratio is lower than 1
 			running_finished_difference=$(echo $ratio_mean_finished - $ratio_mean_running | bc -l)  #Calculate difference between mean times finished and running
-            echo "$logtime Mean time difference of finished to running: " $running_finished_difference
+			echo "$logtime Mean time difference of finished to running: " $running_finished_difference
 			if (( $(echo "$running_finished_ratio >= $rfr" | bc -l) )); then                        #Check if time ratio is greater/equal than threshold (rfr)
-                if (( $(echo "$running_finished_difference <= $rfd1" | bc -l) )); then              #Check if time difference is lower than threshold (rfd1), no new node will start
-                    echo "$logtime There should be soon some free slots. Wait to start new node"
+				if (( $(echo "$running_finished_difference <= $rfd1" | bc -l) )); then              #Check if time difference is lower than threshold (rfd1), no new node will start
+					echo "$logtime There should be soon some free slots. Wait to start new node"
                         	
-				    if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
-                        echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
-			echo "$logtime W3 is added"
-                    else                                                                            #If .virtual_cluster_stats_start file does not exist
-                        echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
-			echo "$logtime W3 is added"
-					    if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
-			                    rm -f /home/centos/.virtual_cluster_stats_stop                      #Remove virtual_cluster_stats_stop file as reset
-                        fi
-                    fi
-                else                                                                                #Else difference is larger than threshold rfd1, add new node
-			if [[ $cluster_nodes_capacity < $mnc ]]; then 
-                        	echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
-				echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
-			else
-				echo "$logtime Maximal number of nodes ($mnc) is already reached"
-				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
-			fi 
-                fi
+					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
+						echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
+						echo "$logtime W3 is added"
+					else                                                                            #If .virtual_cluster_stats_start file does not exist
+						echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
+						echo "$logtime W3 is added" 
+						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
+			                    		rm -f /home/centos/.virtual_cluster_stats_stop                      #Remove virtual_cluster_stats_stop file as reset
+                        		fi
+                    		fi
+			else                                                                                #Else difference is larger than threshold rfd1, add new node
+				if [[ $cluster_nodes_capacity < $mnc ]]; then 
+					echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
+					echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
+				else
+					echo "$logtime Maximal number of nodes ($mnc) is already reached"
+					echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
+				fi 
+			fi
             else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
                 if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
 			if  [[ $cluster_nodes_capacity < $mnc ]]; then
