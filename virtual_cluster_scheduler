@@ -22,6 +22,10 @@ day=$(date +%d)
 timestamp=$(date +%T)
 logtime="$month_short$day $timestamp"
 
+###################################################################
+######################### BEGIN ###################################
+### Sum up weights and decide if new node is started or stopped ###
+###################################################################
 cluster_CPU_capacity_array=($(sudo cat /var/spool/torque/server_priv/nodes | awk -F "=" '{print $2}'))  #Get number of CPUs per node from torque file as array
 cluster_CPU_capacity=0                                                                                  #Initialize number of CPUs variable
 for i in "${cluster_CPU_capacity_array[@]}"                                                             #Iterate over CPU number array 
@@ -88,7 +92,16 @@ else                                                                            
 		fi
 	fi
 fi
+###################################################################
+######################### END #####################################
+### Sum up weights and decide if new node is started or stopped ###
+###################################################################
 
+
+######################################
+############## BEGIN #################
+### Evaluate current cluster usage ###
+######################################
 queued_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c Q)     							#Get number of queued jobs from torque
 running_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c R)    							#Get number of running jobs from torque
 running_jobs_ids=($(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $1,$10}' | grep R | awk '{print $1}'))       #Collect all job ids of running jobs in array
@@ -266,3 +279,7 @@ else
 		fi
 	fi
 fi
+######################################
+############## END ###################
+### Evaluate current cluster usage ###
+######################################
