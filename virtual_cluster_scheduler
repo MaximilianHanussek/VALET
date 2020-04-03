@@ -12,7 +12,7 @@ rfd1=600                                        #Threshold 1 for the running fin
 rfd2=400                                        #Threshold 2 for the running finished difference in seconds
 rCcr=0.1                                        #Threshold for the running CPU capacity ratio (#running jobs through max available CPUs)
 cnc=2                                           #Threshold for the cluster node capacity (set value not lower than the initial number of cluster nodes)
-mnc=4						#Threshold for the maximal number of nodes allowed (set value not higher than openstack quotas)
+mnc=4											#Threshold for the maximal number of nodes allowed (set value not higher than openstack quotas)
 start_threshold=1.0                             #Threshold for the start of a new node by the sum of weights (W1,W2,W3,W4,W5)
 stop_threshold=-5                               #Threshold for the stop of an existing node (downsizing the cluster)
 
@@ -52,17 +52,17 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 	else
 		if (( $(echo "$sum_of_weights_start >= $start_threshold" | bc -l) )); then                      #Check if starting weights sum is higher than starting threshold
 			if [[ $cluster_nodes_capacity < $mnc ]]; then
-				echo "$logtime Start new node based on last timesteps"                            	#Start new node
-				echo "start" > /home/centos/.VALET_status					#(Over)Write "start" to file for VALET_balancer_executor on desktop
-				rm -f /home/centos/.virtual_cluster_stats_start                                 #Remove .virtual_cluster_stats_start as reset
-				exit 0;									    	#Stop execution of the script with 0 = success and skip the rest
+				echo "$logtime Start new node based on last timesteps"                            		#Start new node
+				echo "start" > /home/centos/.VALET_status												#(Over)Write "start" to file for VALET_balancer_executor on desktop
+				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
+				exit 0;									    											#Stop execution of the script with 0 = success and skip the rest
 			else
 				echo "$logtime Maximal number of nodes ($mnc) is already reached."
-				echo "stay" > /home/centos/.VALET_status					#(Over)Write "stay" to file for VALET_balancer_executor on desktop
+				echo "stay" > /home/centos/.VALET_status												#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		else
 			echo "$logtime Sum of weights ($sum_of_weights_start) is lower than the threshold ($start_threshold). No new node will be added"
-			echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop 
+			echo "stay" > /home/centos/.VALET_status                                        			#(Over)Write "stay" to file for VALET_balancer_executor on desktop 
 		fi 
 	fi
 else                                                                                                    #If .virtual_cluster_stats_start file does not exist
@@ -71,26 +71,26 @@ else                                                                            
         	sum_of_weights_stop=0                                                                       #Initialize stopping weights sum variable
         	for i in "${sum_of_weights_array_stop[@]}"                                                  #Iterate over stopping weights array
         	do  
-                	sum_of_weights_stop=$( echo $sum_of_weights_stop + $i | bc -l)                      #Sum up the stopping weights
+                sum_of_weights_stop=$( echo $sum_of_weights_stop + $i | bc -l)							#Sum up the stopping weights
         	done
 	
 		if (( $(echo "$sum_of_weights_stop <= $stop_threshold" | bc -l) )); then                        #Check if stopping weights sum is leq than threshold (negative values) 
-			if [[ $cluster_nodes_capacity > $cnc ]]; then                                           #Check if cluster has more nodes than the initial cluster
-                		rm -f /home/centos/.virtual_cluster_stats_stop                                  #Remove .virtual_cluster_stats_stop file
+			if [[ $cluster_nodes_capacity > $cnc ]]; then                                           	#Check if cluster has more nodes than the initial cluster
+                rm -f /home/centos/.virtual_cluster_stats_stop                                  		#Remove .virtual_cluster_stats_stop file
 				echo "$logtime Take away one node from the cluster as no jobs are currently running and more nodes than the initial cluster are present" #Remove one node from the cluster
-				echo "stop" > /home/centos/.VALET_status                                        #(Over)Write "stop" to file for VALET_balancer_executor on desktop
+				echo "stop" > /home/centos/.VALET_status                                        		#(Over)Write "stop" to file for VALET_balancer_executor on desktop
 				exit 0;                                                                                 #Stop execution of the script with 0 = success and skip the rest
 			else 
-				echo "$logtime Initial cluster is already left. Cannot remove further nodes."            #If initial cluster is already left. Do not remove any nodes
-				rm -f /home/centos/.virtual_cluster_stats_stop                                  #Remove .virtual_cluster_stats_stop file as reset
-				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
+				echo "$logtime Initial cluster is already left. Cannot remove further nodes."          	#If initial cluster is already left. Do not remove any nodes
+				rm -f /home/centos/.virtual_cluster_stats_stop											#Remove .virtual_cluster_stats_stop file as reset
+				echo "stay" > /home/centos/.VALET_status                                        		#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		fi
 	fi
 fi
 
-queued_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c Q)     #Get number of queued jobs from torque
-running_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c R)    #Get number of running jobs from torque
+queued_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c Q)     							#Get number of queued jobs from torque
+running_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c R)    							#Get number of running jobs from torque
 running_jobs_ids=($(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $1,$10}' | grep R | awk '{print $1}'))       #Collect all job ids of running jobs in array
 
 total_current_used_cores=0                                              #Initialize sum variable
@@ -98,7 +98,7 @@ for i in "${running_jobs_ids[@]}"                                       #Iterate
 do
         if [[ $i != "Req'd" ]]; then                                    #Skip "Req'd" array entry
                 job_stats=$(qstat -f $i)
-                if ! grep -q ppn <<< "$job_stats"; then         #Check if no cores are given in the job script (per default one core is used)
+                if ! grep -q ppn <<< "$job_stats"; then         		#Check if no cores are given in the job script (per default one core is used)
                         core_count=1
                         total_current_used_cores=$( echo $total_current_used_cores + $core_count | bc -l)                                               #Add new cores to already summed up ones
                 else                                                                                                                                    #If ppn:X is given parse out nodes and cores
@@ -113,22 +113,23 @@ do
                 fi
         fi  
 done
+
 echo "$logtime Number of currently used cores: $total_current_used_cores"
 
-if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then                              #Check if one of the variables above is zero
-	echo "$logtime Nothing to do, number of queued jobs or running jobs is zero"             #If one check is zero there is no need to add a new node
+if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then								#Check if one of the variables above is zero
+	echo "$logtime Nothing to do, number of queued jobs or running jobs is zero"	#If one check is zero there is no need to add a new node
 	echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 
-#	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)            #Calculate ratio from runnign jobs through max number of CPUs
-	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)            #Calculate ratio from currently used CPUs through max number of CPUs
-	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then  #Check if running jobs are 0 or ratio from above is lower than threshold
-		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                               #If this is the case check if .virtual_cluster_stats_start file exists
-        		echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_start                      #Add weight to .virtual_cluster_stats_start file
+#	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)			#Calculate ratio from runnign jobs through max number of CPUs
+	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)#Calculate ratio from currently used CPUs through max number of CPUs
+	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then	#Check if running jobs are 0 or ratio from above is lower than threshold
+		if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#If this is the case check if .virtual_cluster_stats_start file exists
+        		echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_start						#Add weight to .virtual_cluster_stats_start file
 			echo "$logtime W5 is added"
         else                                                                                    #If .virtual_cluster_stats_start file does not exist
             if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                            #Check if .virtual_cluster_stats_stop file exists
-                echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_stop                       #Add weight to .virtual_cluster_stats_stop file
-		echo "$logtime W5 is added"
+				echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_stop                       #Add weight to .virtual_cluster_stats_stop file
+				echo "$logtime W5 is added"
 		    else                                                                                #If .virtual_cluster_stats_stop file does not exist
 				echo "W5 $W5" > /home/centos/.virtual_cluster_stats_stop                        #Create new .virtual_cluster_stats_stop file and add weight to it
 				echo "$logtime W5 is added"
@@ -143,7 +144,7 @@ else
 	echo "$logtime Ratio of queued to running jobs: " $queued_running_ratio
 
 	if (( $(echo "$queued_running_ratio >= $qrr" | bc -l) )); then                  #Check if ratio is above the chosen threshold, new node may be helpful
-        	echo "$logtime Checking possibility to start new node as half or more jobs than the available capacity is queued"  
+		echo "$logtime Checking possibility to start new node as half or more jobs than the available capacity is queued"  
 		finished_jobs_ids=($(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $1,$10}' | grep C | awk '{print $1}' )) #Get job ids of finished jobs
 		running_jobs_ids=($(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $1,$10}' | grep R | awk '{print $1}'))   #Get job ids of running jobs
 
@@ -154,14 +155,14 @@ else
 		total_finished=0                                                            #Initialize counter for the divisor of the sum (mean calculation)
 
 		if [[ $number_finished_jobs == 0 ]]; then                                   #Check if #finished jobs is zero
-        		ratio_mean_finished=0.1                                             #Set low pseudo count
+        	ratio_mean_finished=0.1                                             	#Set low pseudo count
 		else                                    
-        		for i in "${finished_jobs_ids[@]}"                                  #Iterate over finished job ids
-        		do
-                		total_walltime=$(sudo env "PATH=$PATH" qstat -f $i | grep total_runtime | awk '{print $3}') #Get walltime of the job
-                		sum_finished=$(echo $sum_finished + $total_walltime | bc -l)                                #Add to time sum 
-                		total_finished=$(( $total_finished + 1 ))                                                   #Increase counter
-        		done
+        	for i in "${finished_jobs_ids[@]}"                                  	#Iterate over finished job ids
+        	do
+                total_walltime=$(sudo env "PATH=$PATH" qstat -f $i | grep total_runtime | awk '{print $3}') #Get walltime of the job
+                sum_finished=$(echo $sum_finished + $total_walltime | bc -l)                                #Add to time sum 
+                total_finished=$(( $total_finished + 1 ))                                                   #Increase counter
+        	done
         	ratio_mean_finished=$(echo $sum_finished / $total_finished | bc -l)     #Calculate the mean value of the walltimes
         	echo "$logtime Mean time finished: " $ratio_mean_finished
 		fi
@@ -182,26 +183,26 @@ else
         			fi  
 			done
 		fi
-		ratio_mean_running=$(echo $sum_running / $total_running | bc -l)                    #Calculate the mean value of the walltimes
+		ratio_mean_running=$(echo $sum_running / $total_running | bc -l)							#Calculate the mean value of the walltimes
 		echo "$logtime Mean time running: " $ratio_mean_running
 
-		running_finished_ratio=$(echo $ratio_mean_running / $ratio_mean_finished | bc -l)   #Calculate ratio of mean time values of running and finished jobs
+		running_finished_ratio=$(echo $ratio_mean_running / $ratio_mean_finished | bc -l)   		#Calculate ratio of mean time values of running and finished jobs
 
 		echo "$logtime Mean time ratio: " $running_finished_ratio
 
-		if (( $(echo "$running_finished_ratio > 1.0" | bc -l) )); then                      #Check if time ratio is greater than 1
+		if (( $(echo "$running_finished_ratio > 1.0" | bc -l) )); then								#Check if time ratio is greater than 1
         		echo "$logtime There should be soon some free slots. Wait to start new node"
-			if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Further check if .virtual_cluster_stats_start file exists
-				echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start                  #If it exists add weight to .virtual_cluster_stats_start file
+			if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#Further check if .virtual_cluster_stats_start file exists
+				echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start							#If it exists add weight to .virtual_cluster_stats_start file
 				echo "$logtime W2 is added"
-            		else
-				echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start                   #If it does not exist create the file and add weight
+			else
+				echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start 	                  		#If it does not exist create the file and add weight
 				echo "$logtime weight W2 is added"
-				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if .virtual_cluster_stats_stop file exists
-                    			rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove .virtual_cluster_stats_stop file as reset
-        	    		fi
-            		fi
-		else											                                    #Else, if running_finished_ratio is lower than 1
+				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                		    #Check if .virtual_cluster_stats_stop file exists
+					rm -f /home/centos/.virtual_cluster_stats_stop              		            #Remove .virtual_cluster_stats_stop file as reset
+        	    fi
+            fi
+		else											                		                    #Else, if running_finished_ratio is lower than 1
 			running_finished_difference=$(echo $ratio_mean_finished - $ratio_mean_running | bc -l)  #Calculate difference between mean times finished and running
 			echo "$logtime Mean time difference of finished to running: " $running_finished_difference
 			if (( $(echo "$running_finished_ratio >= $rfr" | bc -l) )); then                        #Check if time ratio is greater/equal than threshold (rfr)
@@ -215,13 +216,13 @@ else
 						echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
 						echo "$logtime W3 is added" 
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
-			                    		rm -f /home/centos/.virtual_cluster_stats_stop                      #Remove virtual_cluster_stats_stop file as reset
-                        		fi
-                    		fi
-			else                                                                                #Else difference is larger than threshold rfd1, add new node
+							rm -f /home/centos/.virtual_cluster_stats_stop                      	#Remove virtual_cluster_stats_stop file as reset
+                        fi
+                    fi
+			else                                                                                	#Else difference is larger than threshold rfd1, add new node
 				if [[ $cluster_nodes_capacity < $mnc ]]; then 
 					echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
-					echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
+					echo "start" > /home/centos/.VALET_status										#(Over)Write "start" to file for VALET_balancer_executor on desktop
 				else
 					echo "$logtime Maximal number of nodes ($mnc) is already reached"
 					echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
@@ -229,23 +230,23 @@ else
 			fi
             else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
                 if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
-			if  [[ $cluster_nodes_capacity < $mnc ]]; then
-        			echo "$logtime There will not be soon some free slots. Start new node."
-				echo "start" > /home/centos/.VALET_status                                        #(Over)Write "start" to file for VALET_balancer_executor on desktop
-			else
-				echo "$logtime Maximal number of nodes ($mnc) is already reached."
-				echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
-			fi
+					if  [[ $cluster_nodes_capacity < $mnc ]]; then
+        				echo "$logtime There will not be soon some free slots. Start new node."
+						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
+					else
+						echo "$logtime Maximal number of nodes ($mnc) is already reached."
+						echo "stay" > /home/centos/.VALET_status									#(Over)Write "stay" to file for VALET_balancer_executor on desktop
+					fi
                 else                                                                                #Else, if time difference is lower than 400s, no new node
              		echo "$logtime Ratio is smaller than threshold of $rfr and time difference is smaller than $rfd2 s. No new node will be started "
-			if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
-                        	echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
-				echo "$logtime W4 is added"
+					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
+                        	echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start				#Add weight to .virtual_cluster_stats_start file
+							echo "$logtime W4 is added"
                 	else                                                                            #If .virtual_cluster_stats_start file does not exist
-                        	echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
-				echo "$logtime W4 is added"
-				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
-                            		rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove virtual_cluster_stats_stop file as reset
+                        	echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start				#Create virtual_cluster_stats_start file and add the weight
+							echo "$logtime W4 is added"
+							if [ -f /home/centos/.virtual_cluster_stats_stop ]; then				#Check if virtual_cluster_stats_stop file exists
+                            		rm -f /home/centos/.virtual_cluster_stats_stop					#Remove virtual_cluster_stats_stop file as reset
                         	fi
                 	fi
                 fi
@@ -253,7 +254,7 @@ else
 		fi
 	else                                                                                            #Else, if queued running ratio is lower then threshold (qrr), no new node is started
 		echo "$logtime No new node needs to be added, capacity is sufficient"
-		echo "stay" > /home/centos/.VALET_status                                        	#(Over)Write "stay" to file for VALET_balancer_executor on desktop
+		echo "stay" > /home/centos/.VALET_status                                        			#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                                   #Check if virtual_cluster_stats_start file exists
 			echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
 			echo "$logtime W1 is added"
