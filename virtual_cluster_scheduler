@@ -155,16 +155,16 @@ else
 		total_finished=0                                                            #Initialize counter for the divisor of the sum (mean calculation)
 
 		if [[ $number_finished_jobs == 0 ]]; then                                   #Check if #finished jobs is zero
-        	ratio_mean_finished=0.1                                             	#Set low pseudo count
+			ratio_mean_finished=0.1                                             	#Set low pseudo count
 		else                                    
-        	for i in "${finished_jobs_ids[@]}"                                  	#Iterate over finished job ids
-        	do
-                total_walltime=$(sudo env "PATH=$PATH" qstat -f $i | grep total_runtime | awk '{print $3}') #Get walltime of the job
-                sum_finished=$(echo $sum_finished + $total_walltime | bc -l)                                #Add to time sum 
-                total_finished=$(( $total_finished + 1 ))                                                   #Increase counter
-        	done
-        	ratio_mean_finished=$(echo $sum_finished / $total_finished | bc -l)     #Calculate the mean value of the walltimes
-        	echo "$logtime Mean time finished: " $ratio_mean_finished
+			for i in "${finished_jobs_ids[@]}"                                  	#Iterate over finished job ids
+			do
+				total_walltime=$(sudo env "PATH=$PATH" qstat -f $i | grep total_runtime | awk '{print $3}') #Get walltime of the job
+				sum_finished=$(echo $sum_finished + $total_walltime | bc -l)                                #Add to time sum 
+				total_finished=$(( $total_finished + 1 ))                                                   #Increase counter
+			done
+			ratio_mean_finished=$(echo $sum_finished / $total_finished | bc -l)     #Calculate the mean value of the walltimes
+			echo "$logtime Mean time finished: " $ratio_mean_finished
 		fi
 
 		sum_running=0                                                               #Initialize sum of the walltime used by running jobs
