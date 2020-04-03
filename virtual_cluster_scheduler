@@ -3,14 +3,14 @@
 ### Threshold variables ###
 W1=0.2                                          #Weight 1 takes effect if queuing running ratio is lower than set threshold (qrr)
 W2=0.3                                          #Weight 2 takes effect if running finished mean time ratio is larger than 1.0
-W3=0.3                                          #Weight 3 takes effect if running finished mean time ratio is greater or equal than the set threshold (rfr) but lower equal than running finished difference (rfd1) 
+W3=0.3                                          #Weight 3 takes effect if running finished mean time ratio is greater or equal than the set threshold (rfr) but lower equal than running finished difference (rfd1)
 W4=0.2                                          #Weight 4 takes effect if running finished mean time ratio is smaler than rfr and smaller than running finished difference (in seconds) (rfd2)
 W5=-0.1                                         #Weight 5 takes effect if no jobs are running or the running CPU capacity ratio is lower than the threshold (rCcr), NEGATIVE value !!!
 qrr=0.4                                         #Threshold for the queueing running ratio value (#queueud jobs through #running jobs)
 rfr=0.8                                         #Threshold for the running finished ratio value (consumed time of running jobs through used walltime of finished jobs staying in the queue)
 rfd1=600                                        #Threshold 1 for the running finished difference in seconds 
 rfd2=400                                        #Threshold 2 for the running finished difference in seconds
-rCcr=0.1                                        #Threshold for the running CPU capacity ratio (#running jobs through max available CPU cores)
+rCcr=0.1                                        #Threshold for the running CPU capacity ratio (#running jobs through max available CPUs)
 cnc=2                                           #Threshold for the cluster node capacity (set value not lower than the initial number of cluster nodes)
 mnc=4						#Threshold for the maximal number of nodes allowed (set value not higher than openstack quotas)
 start_threshold=1.0                             #Threshold for the start of a new node by the sum of weights (W1,W2,W3,W4,W5)
@@ -28,7 +28,7 @@ for i in "${cluster_CPU_capacity_array[@]}"                                     
 do
     cluster_CPU_capacity=$( echo $cluster_CPU_capacity + $i | bc -l)                                    #Sum up the number of CPUs currently available
 done
-echo "$logtime Max. number of CPUs: " $cluster_CPU_capacity
+echo "$logtime Max. number of cores available (free and used): " $cluster_CPU_capacity
 
 cluster_nodes_capacity_array=($(sudo cat /var/spool/torque/server_priv/nodes | awk '{print $1}'))       #Get number of nodes from torque file as array
 cluster_nodes_capacity=0                                                                                #Initialize number of nodes available variable
@@ -91,20 +91,46 @@ fi
 
 queued_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c Q)     #Get number of queued jobs from torque
 running_jobs=$(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $10}' | grep -c R)    #Get number of running jobs from torque
+running_jobs_ids=($(sudo env "PATH=$PATH" qstat -tn1 | awk '{print $1,$10}' | grep R | awk '{print $1}'))       #Collect all job ids of running jobs in array
+
+total_current_used_cores=0                                              #Initialize sum variable
+for i in "${running_jobs_ids[@]}"                                       #Iterate over running job ids array
+do
+        if [[ $i != "Req'd" ]]; then                                    #Skip "Req'd" array entry
+                job_stats=$(qstat -f $i)
+                if ! grep -q ppn <<< "$job_stats"; then         #Check if no cores are given in the job script (per default one core is used)
+                        core_count=1
+                        total_current_used_cores=$( echo $total_current_used_cores + $core_count | bc -l)                                               #Add new cores to already summed up ones
+                else                                                                                                                                    #If ppn:X is given parse out nodes and cores
+                        node_count=$(echo "$job_stats" | grep "Resource_List.nodes" | awk -F = '{print $2}'| awk -F: '{print $1}' | tr -d " \t\n\r")    #Get node count of job
+                        core_count=$(echo "$job_stats" | grep "Resource_List.nodes" | awk -F:ppn= '{print $2}' | tr -d " \t\n\r")
+
+                        if [[ $node_count != 1 ]]; then                                 #Check if node count is not 1, e.g. for MPI jobs
+                                core_count=$(echo "$core_count * $node_count" | bc -l)  #Multiplie cores with number of nodes                   
+                        fi
+        
+                        total_current_used_cores=$( echo $total_current_used_cores + $core_count | bc -l)       #Add new cores to already summed up ones
+                fi
+        fi  
+done
+echo "$logtime Number of currently used cores: $total_current_used_cores"
 
 if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then                              #Check if one of the variables above is zero
 	echo "$logtime Nothing to do, number of queued jobs or running jobs is zero"             #If one check is zero there is no need to add a new node
 	echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 
-	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)            #Calculate ratio from runnign jobs through max number of CPUs
+#	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)            #Calculate ratio from runnign jobs through max number of CPUs
+	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)            #Calculate ratio from currently used CPUs through max number of CPUs
 	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then  #Check if running jobs are 0 or ratio from above is lower than threshold
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                               #If this is the case check if .virtual_cluster_stats_start file exists
         		echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_start                      #Add weight to .virtual_cluster_stats_start file
+			echo "$logtime W5 is added"
         else                                                                                    #If .virtual_cluster_stats_start file does not exist
             if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                            #Check if .virtual_cluster_stats_stop file exists
                 echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_stop                       #Add weight to .virtual_cluster_stats_stop file
 		    else                                                                                #If .virtual_cluster_stats_stop file does not exist
 				echo "W5 $W5" > /home/centos/.virtual_cluster_stats_stop                        #Create new .virtual_cluster_stats_stop file and add weight to it
+				echo "$logtime W5 is added"
 		    fi
         fi
     fi
@@ -166,8 +192,10 @@ else
         		echo "$logtime There should be soon some free slots. Wait to start new node"
 			if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Further check if .virtual_cluster_stats_start file exists
                 echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start                  #If it exists add weight to .virtual_cluster_stats_start file
+		echo "$logtime W2 is added"
             else
                 echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start                   #If it does not exist create the file and add weight
+		echo "$logtime weight W2 is added"
 				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if .virtual_cluster_stats_stop file exists
                     rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove .virtual_cluster_stats_stop file as reset
         	    fi
@@ -181,8 +209,10 @@ else
                         	
 				    if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
                         echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
+			echo "$logtime W3 is added"
                     else                                                                            #If .virtual_cluster_stats_start file does not exist
                         echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
+			echo "$logtime W3 is added"
 					    if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
 			                    rm -f /home/centos/.virtual_cluster_stats_stop                      #Remove virtual_cluster_stats_stop file as reset
                         fi
@@ -209,8 +239,10 @@ else
              		echo "$logtime Ratio is smaller than threshold of $rfr and time difference is smaller than $rfd2 s. No new node will be started "
 			if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
                         	echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
+				echo "$logtime W4 is added"
                 	else                                                                            #If .virtual_cluster_stats_start file does not exist
                         	echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
+				echo "$logtime W4 is added"
 				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
                             		rm -f /home/centos/.virtual_cluster_stats_stop                          #Remove virtual_cluster_stats_stop file as reset
                         	fi
@@ -223,8 +255,10 @@ else
 		echo "stay" > /home/centos/.VALET_status                                        	#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                                   #Check if virtual_cluster_stats_start file exists
 			echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
+			echo "$logtime W1 is added"
 		else                                                                                        #If .virtual_cluster_stats_start file does not exist                               
 			echo "W1 $W1" > /home/centos/.virtual_cluster_stats_start                               #Create virtual_cluster_stats_start file and add the weight
+			echo "$logtime W1 is added"
 			if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                                #Check if virtual_cluster_stats_stop file exists
 				rm -f /home/centos/.virtual_cluster_stats_stop                                      #Remove virtual_cluster_stats_stop file as reset
 			fi
