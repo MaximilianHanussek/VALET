@@ -218,15 +218,15 @@ else
 							rm -f /home/centos/.virtual_cluster_stats_stop                      	#Remove virtual_cluster_stats_stop file as reset
 						fi
 					fi
-			else                                                                                	#Else difference is larger than threshold rfd1, add new node
-				if [[ $cluster_nodes_capacity < $mnc ]]; then 
-					echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
-					echo "start" > /home/centos/.VALET_status										#(Over)Write "start" to file for VALET_balancer_executor on desktop
-				else
-					echo "$logtime Maximal number of nodes ($mnc) is already reached"
-					echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
-				fi 
-			fi
+				else                                                                                #Else difference is larger than threshold rfd1, add new node
+					if [[ $cluster_nodes_capacity < $mnc ]]; then 
+						echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
+						echo "start" > /home/centos/.VALET_status										#(Over)Write "start" to file for VALET_balancer_executor on desktop
+					else
+						echo "$logtime Maximal number of nodes ($mnc) is already reached"
+						echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
+					fi 
+				fi
 			else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
 				if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than 400s, add new node
 					if  [[ $cluster_nodes_capacity < $mnc ]]; then
