@@ -208,7 +208,6 @@ else
 			if (( $(echo "$running_finished_ratio >= $rfr" | bc -l) )); then                        #Check if time ratio is greater/equal than threshold (rfr)
 				if (( $(echo "$running_finished_difference <= $rfd1" | bc -l) )); then              #Check if time difference is lower than threshold (rfd1), no new node will start
 					echo "$logtime There should be soon some free slots. Wait to start new node"
-                        	
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
 						echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
 						echo "$logtime W3 is added"
@@ -217,8 +216,8 @@ else
 						echo "$logtime W3 is added" 
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
 							rm -f /home/centos/.virtual_cluster_stats_stop                      	#Remove virtual_cluster_stats_stop file as reset
-                        fi
-                    fi
+						fi
+					fi
 			else                                                                                	#Else difference is larger than threshold rfd1, add new node
 				if [[ $cluster_nodes_capacity < $mnc ]]; then 
 					echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
