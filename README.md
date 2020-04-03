@@ -26,6 +26,9 @@ In order to setup VALET you need to fulfill the following prerequisites
 - The home directory `/home/centos/` holds some important configuration files, especially on the master node, some are also hidden, so please do not wipe out this directory completely and let files stay where they are
 - Currently it is only possible to use the dynamic scaling with a single cluster, multiple are currently not supported
 
+## Testing
+- The repository contains also a `test` directory that contains a scripts to build a small test environment and an additional batch system file to test the job submission. In order to setup the environment (includes the tools IDBA and SPAdes with proper datasets), just start the shell script `create_test_environment.sh` (`sh create_test_environment.sh`). This will install all the tools and datasets in the shared file system directory (`/beeond/`). In order to submit a job via the `qsub` command of TORQUE, please copy the file qsub_test.sh (also contained in the `test` directory) to the `/beeond/` directory.
+Afterwards change into the `/beeond/` directory and run `qsub qsub_test.sh`. This will submit jobs of IDBA_UD using a small dataset with a walltime of around 2 minutes. The currently running, finished and queued jobs can be watched with the command `qstat -tn1` for example.
 
 ## Latest Images
 This section will list the most up to date and tested images for the master and compute nodes. If you want to use older images for some reasons you will need to change the names in the Terraform`vars.tf` file. 
@@ -218,7 +221,7 @@ and restart the timer
 
 - W3: Will be used if the running/finished mean time ratio is equal/larger than the corresponding threshold (defined with `rfr`) but equal/lower than the running/finished difference threshold (defined with `rfd1`, in seconds). The running/finished difference is calculated by the difference of the mean walltime of finished jobs to the mean walltime of running jobs.
 
-- W4: Will be used if the running/finished mean time ratio is smaller than the corresponding threshold (rfr) and smaller than the second threshold for the running/finished difference (defined with rfd2).
+- W4: Will be used if the running/finished mean time ratio is smaller than the corresponding threshold (`rfr`) and smaller than the second threshold for the running/finished difference (defined with `rfd2).
 
 - W5: Will be used if the number of running jobs is zero or the number of running jobs divided by the maximum number of available cores (running/CPU capacity ratio). The value needs to be **negative** as this is an indicator that the cluster might have unused resources.
 
