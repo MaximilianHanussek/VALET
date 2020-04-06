@@ -89,6 +89,9 @@ else                                                                            
 				rm -f /home/centos/.virtual_cluster_stats_stop											#Remove .virtual_cluster_stats_stop file as reset
 				echo "stay" > /home/centos/.VALET_status                                        		#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
+		else
+			echo "$logtime Sum of weights ($sum_of_weights_stop) is not hitting the threshold ($stop_threshold). No node will be removed"
+
 		fi
 	fi
 fi
