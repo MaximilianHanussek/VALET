@@ -232,7 +232,7 @@ else
 					echo "$logtime W2 is added"
 					exit 0;
 				else
-					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W2 is not added"
 				fi
 			else
 				if [[ $cluster_nodes_capacity < $mnc ]]; then
@@ -243,7 +243,7 @@ else
 						exit 0;
 					fi
 				else
-					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W2 is not added"
 				fi
 			fi
 		else											                		                    #Else, if running_finished_ratio is lower than 1
@@ -259,14 +259,14 @@ else
 							echo "$logtime W3 is added"
 							exit 0;
 						else
-							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W3 is not added"
 						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
 						if [[ $cluster_nodes_capacity < $mnc ]]; then
 							echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
 							echo "$logtime W3 is added"
 						else
-							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W3 is not added"
 						fi 
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
 							rm -f /home/centos/.virtual_cluster_stats_stop                      	#Remove virtual_cluster_stats_stop file as reset
@@ -304,14 +304,14 @@ else
 							echo "$logtime W4 is added"
 							exit 0;
 						else
-							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W4 is not added"
 						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
 						if [[ $cluster_nodes_capacity < $mnc ]]; then
 							echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start					#Create virtual_cluster_stats_start file and add the weight
 							echo "$logtime W4 is added"
 						else
-							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W4 is not added"
 						fi
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then					#Check if virtual_cluster_stats_stop file exists
 							rm -f /home/centos/.virtual_cluster_stats_stop							#Remove virtual_cluster_stats_stop file as reset
@@ -330,14 +330,14 @@ else
 				echo "$logtime W1 is added"
 				exit 0;
 			else
-				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W1 is not added"
 			fi
 		else                                                                                        #If .virtual_cluster_stats_start file does not exist
 			if [[ $cluster_nodes_capacity < $mnc ]]; then                              
 				echo "W1 $W1" > /home/centos/.virtual_cluster_stats_start                               #Create virtual_cluster_stats_start file and add the weight
 				echo "$logtime W1 is added"
 			else
-				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W1 is not added"
 			fi
 			if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                                #Check if virtual_cluster_stats_stop file exists
 				rm -f /home/centos/.virtual_cluster_stats_stop                                      #Remove virtual_cluster_stats_stop file as reset
