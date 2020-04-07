@@ -225,15 +225,23 @@ else
 		if (( $(echo "$running_finished_ratio > 1.0" | bc -l) )); then								#Check if time ratio is greater than 1
 			echo "$logtime There should be soon some free slots. Wait to start new node"
 			if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#Further check if .virtual_cluster_stats_start file exists
-				echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start							#If it exists add weight to .virtual_cluster_stats_start file
-				echo "$logtime W2 is added"
-				exit 0;
-			else
-				echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start 	                  		#If it does not exist create the file and add weight
-				echo "$logtime weight W2 is added"
-				if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                		    #Check if .virtual_cluster_stats_stop file exists
-					rm -f /home/centos/.virtual_cluster_stats_stop              		            #Remove .virtual_cluster_stats_stop file as reset
+				if [[ $cluster_nodes_capacity < $mnc ]]; then
+					echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start							#If it exists add weight to .virtual_cluster_stats_start file
+					echo "$logtime W2 is added"
 					exit 0;
+				else
+					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+				fi
+			else
+				if [[ $cluster_nodes_capacity < $mnc ]]; then
+					echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start 	                  		#If it does not exist create the file and add weight
+					echo "$logtime weight W2 is added"
+					if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                		    #Check if .virtual_cluster_stats_stop file exists
+						rm -f /home/centos/.virtual_cluster_stats_stop              		            #Remove .virtual_cluster_stats_stop file as reset
+						exit 0;
+					fi
+				else
+					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
 				fi
 			fi
 		else											                		                    #Else, if running_finished_ratio is lower than 1
@@ -244,12 +252,20 @@ else
 				if (( $(echo "$predicted_time_overall_queued <= $rfd1" | bc -l) )); then 			#Check if predicted waiting time is greater/equal than rfd1, add new node
 					echo "$logtime There should be soon some free slots. Wait to start new node"
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
-						echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
-						echo "$logtime W3 is added"
-						exit 0;
+						if [[ $cluster_nodes_capacity < $mnc ]]; then
+							echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
+							echo "$logtime W3 is added"
+							exit 0;
+						else
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
-						echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
-						echo "$logtime W3 is added" 
+						if [[ $cluster_nodes_capacity < $mnc ]]; then
+							echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
+							echo "$logtime W3 is added"
+						else
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+						fi 
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                    #Check if virtual_cluster_stats_stop file exists
 							rm -f /home/centos/.virtual_cluster_stats_stop                      	#Remove virtual_cluster_stats_stop file as reset
 							exit 0;
@@ -281,12 +297,20 @@ else
 				else                                                                                #Else, if time difference is lower than rfd2, no new node
 					echo "$logtime Ratio is smaller than threshold of $rfr and time difference is smaller than $rfd2 s. No new node will be started "
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
-						echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start					#Add weight to .virtual_cluster_stats_start file
-						echo "$logtime W4 is added"
-						exit 0;
+						if [[ $cluster_nodes_capacity < $mnc ]]; then
+							echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start					#Add weight to .virtual_cluster_stats_start file
+							echo "$logtime W4 is added"
+							exit 0;
+						else
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
-						echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start					#Create virtual_cluster_stats_start file and add the weight
-						echo "$logtime W4 is added"
+						if [[ $cluster_nodes_capacity < $mnc ]]; then
+							echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start					#Create virtual_cluster_stats_start file and add the weight
+							echo "$logtime W4 is added"
+						else
+							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+						fi
 						if [ -f /home/centos/.virtual_cluster_stats_stop ]; then					#Check if virtual_cluster_stats_stop file exists
 							rm -f /home/centos/.virtual_cluster_stats_stop							#Remove virtual_cluster_stats_stop file as reset
 							exit 0;
@@ -299,12 +323,20 @@ else
 		echo "$logtime No new node needs to be added, capacity is sufficient"
 		echo "stay" > /home/centos/.VALET_status                                        			#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                                   #Check if virtual_cluster_stats_start file exists
-			echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
-			echo "$logtime W1 is added"
-			exit 0;
-		else                                                                                        #If .virtual_cluster_stats_start file does not exist                               
-			echo "W1 $W1" > /home/centos/.virtual_cluster_stats_start                               #Create virtual_cluster_stats_start file and add the weight
-			echo "$logtime W1 is added"
+			if [[ $cluster_nodes_capacity < $mnc ]]; then
+				echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
+				echo "$logtime W1 is added"
+				exit 0;
+			else
+				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+			fi
+		else                                                                                        #If .virtual_cluster_stats_start file does not exist
+			if [[ $cluster_nodes_capacity < $mnc ]]; then                              
+				echo "W1 $W1" > /home/centos/.virtual_cluster_stats_start                               #Create virtual_cluster_stats_start file and add the weight
+				echo "$logtime W1 is added"
+			else
+				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight is not added"
+			fi
 			if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                                #Check if virtual_cluster_stats_stop file exists
 				rm -f /home/centos/.virtual_cluster_stats_stop                                      #Remove virtual_cluster_stats_stop file as reset
 				exit 0;
