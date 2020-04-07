@@ -60,7 +60,7 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 	else
 		if (( $(echo "$sum_of_weights_start >= $start_threshold" | bc -l) )); then                      #Check if starting weights sum is higher than starting threshold
 			if [[ $cluster_nodes_capacity < $mnc ]]; then
-				echo "$logtime Start new node based on last timesteps as sum of weights ($$sum_of_weights_start) is larger than threshold ($start_threshold)"	#Start new node
+				echo "$logtime Start new node based on last timesteps as sum of weights ($sum_of_weights_start) is larger than threshold ($start_threshold)"	#Start new node
 				echo "start" > /home/centos/.VALET_status												#(Over)Write "start" to file for VALET_balancer_executor on desktop
 				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
 				exit 0;									    											#Stop execution of the script with 0 = success and skip the rest
