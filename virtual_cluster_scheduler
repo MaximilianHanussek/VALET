@@ -213,6 +213,7 @@ else
 		fi
 		ratio_mean_running=$(echo $sum_running / $total_running | bc -l)							#Calculate the mean value of the walltimes
 		echo "$logtime Mean time running: " $ratio_mean_running
+		echo "$logtime Mean time finished:" $ratio_mean_finished
 
 		running_finished_ratio=$(echo $ratio_mean_running / $ratio_mean_finished | bc -l)   		#Calculate ratio of mean time values of running and finished jobs
 
