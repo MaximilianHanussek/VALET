@@ -1,8 +1,8 @@
 [Unit]
-Description=Timer for VALET_balancer_executor starts every X min (currently 1min), triggering VALET_balancer.service
+Description=Timer for VALET_balancer_executor starts every X min, triggering VALET_balancer.service
 
 [Timer]
-OnUnitActiveSec=1min
+OnUnitActiveSec=2min
 AccuracySec=1us
 
 [Install]
