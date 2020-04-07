@@ -65,7 +65,7 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
 				exit 0;									    											#Stop execution of the script with 0 = success and skip the rest
 			else
-				echo "$logtime Sum of weigthts of last timesteps would be sufficient but maximal number of nodes ($mnc) is already reached."
+				echo "$logtime Sum of weights of last timesteps would be sufficient but maximal number of nodes ($mnc) is already reached."
 				echo "stay" > /home/centos/.VALET_status												#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		else
