@@ -1,8 +1,8 @@
 [Unit]
-Description=Timer for VALET_scheduler starts every X min (currently 1min), triggering VALET_scheduler.service
+Description=Timer for VALET_scheduler starts every X min, triggering VALET_scheduler.service
 
 [Timer]
-OnUnitActiveSec=1min
+OnUnitActiveSec=2min
 AccuracySec=1us
 
 [Install]
