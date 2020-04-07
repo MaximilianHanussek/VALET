@@ -53,12 +53,14 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 		sum_of_weights_start=$( echo $sum_of_weights_start + $i | bc -l)                                #Sum up the starting weights
 	done
 	
+	echo "$logtime Current sum of weights: $sum_of_weights_start"
+	
 	if (( $(echo "$sum_of_weights_start <= 0" | bc -l) )); then                                         #Check if the starting weights sum is leq than 0
 		rm -f /home/centos/.virtual_cluster_stats_start                                                 #Remove .virtual_cluster_stats_start file 
 	else
 		if (( $(echo "$sum_of_weights_start >= $start_threshold" | bc -l) )); then                      #Check if starting weights sum is higher than starting threshold
 			if [[ $cluster_nodes_capacity < $mnc ]]; then
-				echo "$logtime Start new node based on last timesteps"                            		#Start new node
+				echo "$logtime Start new node based on last timesteps as sum of weights ($$sum_of_weights_start) is larger than threshold ($start_threshold)"	#Start new node
 				echo "start" > /home/centos/.VALET_status												#(Over)Write "start" to file for VALET_balancer_executor on desktop
 				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
 				exit 0;									    											#Stop execution of the script with 0 = success and skip the rest
@@ -139,7 +141,7 @@ if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then								#Check if one of t
 	echo "stay" > /home/centos/.VALET_status                                        #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 
 #	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)			#Calculate ratio from runnign jobs through max number of CPUs
-	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)#Calculate ratio from currently used CPUs through max number of CPUs
+	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)	#Calculate ratio from currently used CPUs through max number of CPUs
 	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then	#Check if running jobs are 0 or ratio from above is lower than threshold
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#If this is the case check if .virtual_cluster_stats_start file exists
 			echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_start							#Add weight to .virtual_cluster_stats_start file
