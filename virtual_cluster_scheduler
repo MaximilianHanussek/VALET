@@ -65,7 +65,7 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
 				exit 0;									    											#Stop execution of the script with 0 = success and skip the rest
 			else
-				echo "$logtime Maximal number of nodes ($mnc) is already reached."
+				echo "$logtime Sum of weigthts of last timesteps would be sufficient but maximal number of nodes ($mnc) is already reached."
 				echo "stay" > /home/centos/.VALET_status												#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 			fi
 		else
@@ -275,11 +275,11 @@ else
 					fi
 				else                                                                                #Else difference is larger than threshold rfd1, add new node
 					if [[ $cluster_nodes_capacity < $mnc ]]; then 
-						echo "$logtime Ratio is larger then threshold of $rfr but time difference larger than $rfd1 s. Start new node"
+						echo "$logtime Running finished ratio is larger then threshold of $rfr and predicted time is larger than $rfd1 s. Start new node"
 						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
 						exit 0;
 					else
-						echo "$logtime Maximal number of nodes ($mnc) is already reached"
+						echo "$logtime Running finished ratio is larger $rfr and predicted time is larger than $rfd1 but maximal number of nodes ($mnc) is already reached"
 						echo "stay" > /home/centos/.VALET_status                                    #(Over)Write "stay" to file for VALET_balancer_executor on desktop
 						exit 0;
 					fi 
@@ -288,16 +288,16 @@ else
 #				if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than rfd2, add new node
 				if (( $(echo "$predicted_time_overall_queued >= $rfd2" | bc -l) )); then			#Check if predicted waiting time is greater/equal than rfd2, add new node
 					if  [[ $cluster_nodes_capacity < $mnc ]]; then
-        				echo "$logtime There will not be soon some free slots. Start new node."
+        				echo "$logtime The predicted time is larger than $rfd2. There will not be soon some free slots. Start new node."
 						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
 						exit 0;
 					else
-						echo "$logtime Maximal number of nodes ($mnc) is already reached."
+						echo "$logtime The predicted time is larger than $rfd2 but the maximal number of nodes ($mnc) is already reached."
 						echo "stay" > /home/centos/.VALET_status									#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 						exit 0;
 					fi
 				else                                                                                #Else, if time difference is lower than rfd2, no new node
-					echo "$logtime Ratio is smaller than threshold of $rfr and time difference is smaller than $rfd2 s. No new node will be started "
+					echo "$logtime Ratio is smaller than threshold of $rfr but predicted is smaller than $rfd2 s. No new node will be started "
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
 						if [[ $cluster_nodes_capacity < $mnc ]]; then
 							echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start					#Add weight to .virtual_cluster_stats_start file
