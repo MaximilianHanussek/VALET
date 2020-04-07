@@ -196,7 +196,7 @@ else
 			echo "$logtime New rfd1 threshold in seconds: $rfd1"
 
 			rfd2=$(echo "$ratio_mean_finished * $rfd2_multiplicator" | bc -l)		#Dynamic rfd2 threshold calculation step
-			echo "$logtime New rfd2 threshold in seconds: $rfd1"
+			echo "$logtime New rfd2 threshold in seconds: $rfd2"
 
 		fi
 
