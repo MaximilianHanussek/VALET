@@ -143,13 +143,13 @@ if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then								#Check if one of t
 #	running_CPU_capacity_ratio=$(echo $running_jobs / $cluster_CPU_capacity | bc -l)			#Calculate ratio from runnign jobs through max number of CPUs
 	running_CPU_capacity_ratio=$(echo $total_current_used_cores / $cluster_CPU_capacity | bc -l)	#Calculate ratio from currently used CPUs through max number of CPUs
 	echo "$logtime Running CPU capacity ratio: $running_CPU_capacity_ratio"
-	if [[ $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) ]]; then	#Check if running jobs are 0 or ratio from above is lower than threshold
+	if (( $running_jobs == 0 || $(echo "$running_CPU_capacity_ratio < $rCcr" | bc -l) )); then	#Check if running jobs are 0 or ratio from above is lower than threshold
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#If this is the case check if .virtual_cluster_stats_start file exists
 			echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_start							#Add weight to .virtual_cluster_stats_start file
 			echo "$logtime W5 is added due to running jobs: $running_jobs or running CPU capacity hit threshold: $running_CPU_capacity_ratio"
 			exit 0;
-        else                                                                                    #If .virtual_cluster_stats_start file does not exist
-        	if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                            #Check if .virtual_cluster_stats_stop file exists
+		else                                                                                    #If .virtual_cluster_stats_start file does not exist
+			if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                            #Check if .virtual_cluster_stats_stop file exists
 				echo "W5 $W5" >> /home/centos/.virtual_cluster_stats_stop                       #Add weight to .virtual_cluster_stats_stop file
 				echo "$logtime W5 is added"
 				exit 0;
