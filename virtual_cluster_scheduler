@@ -134,7 +134,7 @@ do
         fi  
 done
 
-echo "$logtime Number of currently used cores: $total_current_used_cores"
+echo "$logtime Number of currently used cores: $total_current_used_cores / $cluster_CPU_capacity"
 
 if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then								#Check if one of the variables above is zero
 	echo "$logtime Nothing to do, number of queued jobs or running jobs is zero"	#If one check is zero there is no need to add a new node
