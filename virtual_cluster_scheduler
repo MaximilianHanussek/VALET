@@ -159,6 +159,8 @@ if [[ $queued_jobs == 0 || $running_jobs == 0 ]]; then								#Check if one of t
 				exit 0;
 			fi
 		fi
+	else
+		echo "Number of queued jobs are 0 but cluster is still used to its capacity"
 	fi
 else                                                                    
 	queued_running_ratio=$(echo $queued_jobs / $running_jobs | bc -l)               #If queued or running jobs are not 0, calculate the ratio of #queued and #running jobs 
