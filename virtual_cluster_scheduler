@@ -12,11 +12,11 @@ rfd1=400                                        #Threshold 1 for the running fin
 rfd2=200                                        #Threshold 2 for the running finished difference in seconds
 rfd1_multiplicator=10							#Multiplicator for rfd1 threshold to keep the range relative to the real walltimes instead of fixed
 rfd2_multiplicator=5							#Multiplicator for rfd2 threshold to keep the range relative to the real walltimes instead of fixed
-rCcr=0.2                                        #Threshold for the running CPU capacity ratio (#running jobs through max available CPUs)
-cnc=2                                           #Threshold for the cluster node capacity (set value not lower than the initial number of cluster nodes)
+rCcr=0.2										#Threshold for the running CPU capacity ratio (#running jobs through max available CPUs)
+cnc=2											#Threshold for the cluster node capacity (set value not lower than the initial number of cluster nodes)
 mnc=4											#Threshold for the maximal number of nodes allowed (set value not higher than openstack quotas)
-start_threshold=1.0                             #Threshold for the start of a new node by the sum of weights (W1,W2,W3,W4,W5)
-stop_threshold=-5                               #Threshold for the stop of an existing node (downsizing the cluster)
+start_threshold=1.0								#Threshold for the start of a new node by the sum of weights (W1,W2,W3,W4,W5)
+stop_threshold=-5								#Threshold for the stop of an existing node (downsizing the cluster)
 
 ### Logdate variables ###
 month_short=$(date +%b)
@@ -59,7 +59,7 @@ if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       
 		rm -f /home/centos/.virtual_cluster_stats_start                                                 #Remove .virtual_cluster_stats_start file 
 	else
 		if (( $(echo "$sum_of_weights_start >= $start_threshold" | bc -l) )); then                      #Check if starting weights sum is higher than starting threshold
-			if [[ $cluster_nodes_capacity < $mnc ]]; then
+			if (( $cluster_nodes_capacity < $mnc )); then
 				echo "$logtime Start new node based on last timesteps as sum of weights ($sum_of_weights_start) is larger than threshold ($start_threshold)"	#Start new node
 				echo "start" > /home/centos/.VALET_status												#(Over)Write "start" to file for VALET_balancer_executor on desktop
 				rm -f /home/centos/.virtual_cluster_stats_start                                 		#Remove .virtual_cluster_stats_start as reset
@@ -83,7 +83,7 @@ else                                                                            
         	done
 	
 		if (( $(echo "$sum_of_weights_stop <= $stop_threshold" | bc -l) )); then                        #Check if stopping weights sum is leq than threshold (negative values) 
-			if [[ $cluster_nodes_capacity > $cnc ]]; then                                           	#Check if cluster has more nodes than the initial cluster
+			if (( $cluster_nodes_capacity > $cnc )); then                                           	#Check if cluster has more nodes than the initial cluster
                 rm -f /home/centos/.virtual_cluster_stats_stop                                  		#Remove .virtual_cluster_stats_stop file
 				echo "$logtime Take away one node from the cluster as no jobs are currently running and more nodes than the initial cluster are present" #Remove one node from the cluster
 				echo "stop" > /home/centos/.VALET_status                                        		#(Over)Write "stop" to file for VALET_balancer_executor on desktop
@@ -230,7 +230,7 @@ else
 		if (( $(echo "$running_finished_ratio > 1.0" | bc -l) )); then								#Check if time ratio is greater than 1
 			echo "$logtime There should be soon some free slots. Wait to start new node"
 			if [ -f /home/centos/.virtual_cluster_stats_start ]; then								#Further check if .virtual_cluster_stats_start file exists
-				if [[ $cluster_nodes_capacity < $mnc ]]; then
+				if (( $cluster_nodes_capacity < $mnc )); then
 					echo "W2 $W2" >> /home/centos/.virtual_cluster_stats_start							#If it exists add weight to .virtual_cluster_stats_start file
 					echo "$logtime W2 is added"
 					exit 0;
@@ -238,7 +238,7 @@ else
 					echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W2 is not added"
 				fi
 			else
-				if [[ $cluster_nodes_capacity < $mnc ]]; then
+				if (( $cluster_nodes_capacity < $mnc )); then
 					echo "W2 $W2" > /home/centos/.virtual_cluster_stats_start 	                  		#If it does not exist create the file and add weight
 					echo "$logtime weight W2 is added"
 					if [ -f /home/centos/.virtual_cluster_stats_stop ]; then                		    #Check if .virtual_cluster_stats_stop file exists
@@ -257,7 +257,7 @@ else
 				if (( $(echo "$predicted_time_overall_queued <= $rfd1" | bc -l) )); then 			#Check if predicted waiting time is greater/equal than rfd1, add new node
 					echo "$logtime There should be soon some free slots. Wait to start new node"
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if .virtual_cluster_stats_start file exists
-						if [[ $cluster_nodes_capacity < $mnc ]]; then
+						if (( $cluster_nodes_capacity < $mnc )); then
 							echo "W3 $W3" >> /home/centos/.virtual_cluster_stats_start                  #Add weight to .virtual_cluster_stats_start file
 							echo "$logtime W3 is added"
 							exit 0;
@@ -265,7 +265,7 @@ else
 							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W3 is not added"
 						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
-						if [[ $cluster_nodes_capacity < $mnc ]]; then
+						if (( $cluster_nodes_capacity < $mnc )); then
 							echo "W3 $W3" > /home/centos/.virtual_cluster_stats_start                   #Create virtual_cluster_stats_start file and add the weight
 							echo "$logtime W3 is added"
 						else
@@ -277,7 +277,7 @@ else
 						fi
 					fi
 				else                                                                                #Else difference is larger than threshold rfd1, add new node
-					if [[ $cluster_nodes_capacity < $mnc ]]; then 
+					if (( $cluster_nodes_capacity < $mnc )); then 
 						echo "$logtime Running finished ratio is larger then threshold of $rfr and predicted time is larger than $rfd1 s. Start new node"
 						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
 						exit 0;
@@ -290,7 +290,7 @@ else
 			else                                                                                    #Else, if running finished ratio is lower than threshold (rfr)
 #				if (( $(echo "$running_finished_difference >= $rfd2" | bc -l) )); then              #Check if time difference is greater/equal than rfd2, add new node
 				if (( $(echo "$predicted_time_overall_queued >= $rfd2" | bc -l) )); then			#Check if predicted waiting time is greater/equal than rfd2, add new node
-					if  [[ $cluster_nodes_capacity < $mnc ]]; then
+					if  (( $cluster_nodes_capacity < $mnc )); then
         				echo "$logtime The predicted time is larger than $rfd2. There will not be soon some free slots. Start new node."
 						echo "start" > /home/centos/.VALET_status									#(Over)Write "start" to file for VALET_balancer_executor on desktop
 						exit 0;
@@ -302,7 +302,7 @@ else
 				else                                                                                #Else, if time difference is lower than rfd2, no new node
 					echo "$logtime Ratio is smaller than threshold of $rfr but predicted is smaller than $rfd2 s. No new node will be started "
 					if [ -f /home/centos/.virtual_cluster_stats_start ]; then                       #Check if virtual_cluster_stats_start file exists
-						if [[ $cluster_nodes_capacity < $mnc ]]; then
+						if (( $cluster_nodes_capacity < $mnc )); then
 							echo "W4 $W4" >> /home/centos/.virtual_cluster_stats_start					#Add weight to .virtual_cluster_stats_start file
 							echo "$logtime W4 is added"
 							exit 0;
@@ -310,7 +310,7 @@ else
 							echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W4 is not added"
 						fi
 					else                                                                            #If .virtual_cluster_stats_start file does not exist
-						if [[ $cluster_nodes_capacity < $mnc ]]; then
+						if (( $cluster_nodes_capacity < $mnc )); then
 							echo "W4 $W4" > /home/centos/.virtual_cluster_stats_start					#Create virtual_cluster_stats_start file and add the weight
 							echo "$logtime W4 is added"
 						else
@@ -328,7 +328,7 @@ else
 		echo "$logtime No new node needs to be added, capacity is sufficient"
 		echo "stay" > /home/centos/.VALET_status                                        			#(Over)Write "stay" to file for VALET_balancer_executor on desktop
 		if [ -f /home/centos/.virtual_cluster_stats_start ]; then                                   #Check if virtual_cluster_stats_start file exists
-			if [[ $cluster_nodes_capacity < $mnc ]]; then
+			if (( $cluster_nodes_capacity < $mnc )); then
 				echo "W1 $W1" >> /home/centos/.virtual_cluster_stats_start                              #Add weight to .virtual_cluster_stats_start file
 				echo "$logtime W1 is added"
 				exit 0;
@@ -336,7 +336,7 @@ else
 				echo "$logtime Maximal number of nodes ($mnc) is already reached, weight W1 is not added"
 			fi
 		else                                                                                        #If .virtual_cluster_stats_start file does not exist
-			if [[ $cluster_nodes_capacity < $mnc ]]; then                              
+			if (( $cluster_nodes_capacity < $mnc )); then                              
 				echo "W1 $W1" > /home/centos/.virtual_cluster_stats_start                               #Create virtual_cluster_stats_start file and add the weight
 				echo "$logtime W1 is added"
 			else
