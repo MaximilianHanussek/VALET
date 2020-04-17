@@ -113,3 +113,13 @@ sh configure_unicore $MASTER_NODE_IP_LOCAL $TOTAL_CPUS_MAX $NODE_CPUS_MAX $NODE_
 
 ### Set up Zabbix monitoring system ###
 sh setup_zabbix $MASTER_NODE_IP_PUBLIC $MASTER_NODE_IP_LOCAL $SSH_KEY_PATH
+
+### Add Zabbix user to wheel group for sudo rigths ###
+sudo usermod -aG wheel zabbix
+
+### Add login shell to Zabbix user ###
+sudo chsh -s /bin/bash zabbix
+
+### Allow passwortless sudo for Zabbix user ###
+echo 'zabbix ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
+
