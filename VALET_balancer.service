@@ -3,7 +3,7 @@ Description=Starts the balance executor of the VALET on demand cluster in order 
 
 [Service]
 Type=simple
-WorkingDir=/path/to/git/repo/dir
+WorkingDirectory=/path/to/git/repo/dir
 ExecStart=/bin/sh -c '/path/to/VALET_balancer_executor 2>&1 >>/var/log/VALET_balancer.log'
 
 [Install]
