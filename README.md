@@ -213,6 +213,7 @@ and restart the timer
 <pre>sudo systemctl restart VALET_scheduler.timer</pre>
  
 -  The VALET scheduler comes with a set of parameters that can be edited to adjust the up and down scaling of cluster nodes. All parameters can be edited in the file `virtual_cluster_scheduler` file under `/usr/local/bin/` and are explained in the following.
+You can change maximal **compute node** number, which is handled by the `mnc` parameter. Per default this is set to 4. So if you start the initial cluster 3 instances and 3 volumes would be necessary regarding your assigned OpenStack quota. If the default values of the scheduler are used and the OpenStack project is just used for the virtual cluster an instance quota of 5 and 5 volumes would be required. If you have and want more resources please adjust the entered value to your needs.
 
 **Weights**:The weigths are used if no direct decisssion of starting or stoping nodes has been made.
 - W1: Will be used if the number of queued jobs divided by the number of finished jobs is lower than the threshold (defined with variable `qrr`)
@@ -243,12 +244,11 @@ The required services and software, included in the Git repository, on the deskt
 
 Before you copy the files to correct directories you can or have to edit them suiting your needs.
 
-
-- For the `virtual_cluster_scheduler` file you find under `/usr/local/bin/` please enter the maximal **compute node** number, which is handled by the `mnc` parameter. Per default this is set to 4. So if you start the initial cluster 3 instances and 3 volumes would be necessary regarding your assigned OpenStack quota. If the default values of the scheduler are used and the OpenStack project is just used for the virtual cluster an instance quota of 5 and 5 volumes would be required. If you have and want more resources please adjust the entered value to your needs.
-
 - The `VALET_balancer.timer` service is executed every minute if you want to broaden that, edit the `OnUnitActiveSec` to your needs. This time number affects the `VALET_balancer.service` and subsequently the `VALET_balancer_executor`script on how often it will be chekcked (every x min) how the cluster status is. The longer the time the less agressive nodes will be added and removed. Please edit this parameter to your needs.
 
-- For the `VALET_balancer.service` please enter the correct path of the Git repository directory where you can also find the `VALET_balancer_executor` for the parameter `WorkingDir` in the `[Service]` section. Further please enter the full path to the `VALET_balancer_executor` file, which should just be to replace `/path/to/` with the `WorkingDir` parameter from above.
+- For the `VALET_balancer.service` please enter the correct path of the Git repository directory where you can also find the `VALET_balancer_executor` for the parameter `WorkingDirectory` in the `[Service]` section. Further please enter the full path to the `VALET_balancer_executor` file, which should just be to replace `/path/to/` with the `WorkingDirectory` parameter from above.
+
+- In addition please add the location of the `OpenStack rc-file` in the `VALET_balancer_executor` file you find in the downloaded Git repo on the top level.
 
 - Place the file `VALET_balancer.timer` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
 - Place the file `VALET_balancer.service` in the directory `/usr/lib/systemd/system/` (for CentOS 7) (root permission required)
