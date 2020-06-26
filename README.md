@@ -47,10 +47,10 @@ The following information will help you to setup and use the virtual UNICORE clu
 
 ### 1. Download/clone the git repository
 In order to use the sources you need to download or clone this git repository to your local machine.
-<pre>git clone https://github.com/MaximilianHanussek/virtual_cluster_local_ips.git</pre>
+<pre>git clone https://github.com/MaximilianHanussek/VALET.git</pre>
 
 You can also download it as a ZIP archive from the website of the repository or via `wget`
-<pre>wget https://github.com/MaximilianHanussek/virtual_cluster_local_ips/archive/master.zip</pre>
+<pre>wget https://github.com/MaximilianHanussek/VALET/archive/master.zip</pre>
 you will find it as `master.zip`.
 
 ### 2. Source openstack credentials and initialize
