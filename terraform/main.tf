@@ -20,11 +20,12 @@ resource "openstack_compute_instance_v2" "master-instance" {
   security_groups = "${var.security_groups}"
   
   network {
-    name = "${var.network_master}"
+    name = "${var.network_master_local}"
   }
 
   network {
-    name = "${var.network_master_local}"
+    name = "${var.network_master}"
+    access_network = true
   }
 
 
@@ -53,18 +54,6 @@ block_device {
       user        = "centos"
       timeout     = "5m"
       host	  = "${self.access_ip_v4}"
-    }
-  }
-
-   provisioner "remote-exec" {
-    script = "configure_local_net.sh"
-
-    connection {
-      type        = "ssh"
-      private_key = "${file(var.private_key_path)}"
-      user        = "centos"
-      timeout     = "5m"
-      host        = "${self.access_ip_v4}"
     }
   }
 
@@ -97,7 +86,7 @@ block_device {
   provisioner "remote-exec" {
     inline = [
       "echo '${openstack_compute_instance_v2.master-instance.access_ip_v4} ${var.name_prefix}master-public' >> /etc/hosts",
-      "echo '${openstack_compute_instance_v2.master-instance.network.1.fixed_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
+      "echo '${openstack_compute_instance_v2.master-instance.network.0.fixed_ip_v4} ${var.name_prefix}master' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.0.access_ip_v4} ${var.name_prefix}compute-node-0' >> /etc/hosts",
       "echo '${openstack_compute_instance_v2.compute.1.access_ip_v4} ${var.name_prefix}compute-node-1' >> /etc/hosts"
     ]
