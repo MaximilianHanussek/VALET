@@ -62,7 +62,7 @@ variable "security_groups" {
 }
 
 variable "network_master" {
-  default = "denbi_uni_tuebingen_external2"
+  default = "denbi_uni_tuebingen_external"
 }
 
 
