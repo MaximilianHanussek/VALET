@@ -5,7 +5,7 @@ W1=0.1                                          #Weight 1 takes effect if queuin
 W2=0.3                                          #Weight 2 takes effect if running finished mean time ratio is larger than 1.0
 W3=0.3                                          #Weight 3 takes effect if running finished mean time ratio is greater or equal than the set threshold (rfr) but lower equal than running finished difference (rfd1)
 W4=0.2                                          #Weight 4 takes effect if running finished mean time ratio is smaler than rfr and smaller than running finished difference (in seconds) (rfd2)
-W5=-0.1                                         #Weight 5 takes effect if no jobs are running or the running CPU capacity ratio is lower than the threshold (rCcr), NEGATIVE value !!!
+W5=-0.2                                         #Weight 5 takes effect if no jobs are running or the running CPU capacity ratio is lower than the threshold (rCcr), NEGATIVE value !!!
 qrr=0.4                                         #Threshold for the queueing running ratio value (#queueud jobs through #running jobs)
 rfr=0.8                                         #Threshold for the running finished ratio value (consumed time of running jobs through used walltime of finished jobs staying in the queue)
 rfd1=400                                        #Threshold 1 for the running finished difference in seconds 
@@ -16,7 +16,7 @@ rCcr=0.2										#Threshold for the running CPU capacity ratio (#running jobs t
 cnc=2											#Threshold for the cluster node capacity (set value not lower than the initial number of cluster nodes)
 mnc=4											#Threshold for the maximal number of nodes allowed (set value not higher than openstack quotas)
 start_threshold=1.0								#Threshold for the start of a new node by the sum of weights (W1,W2,W3,W4,W5)
-stop_threshold=-5								#Threshold for the stop of an existing node (downsizing the cluster)
+stop_threshold=-1								#Threshold for the stop of an existing node (downsizing the cluster)
 
 ### Logdate variables ###
 month_short=$(date +%b)
