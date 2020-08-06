@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Start time"
+date
+
 for i in {1..10}
 do
 	qsub qsub_short_sleep.sh
@@ -14,3 +17,5 @@ for i in {1..10}
 do
 	qsub qsub_short_sleep.sh
 done
+
+echo "Finish time"

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Start time"
+date
+
 download=$(shuf -i 50-200 -n 1)
 for i in $(seq 1 $download)
 do
@@ -110,3 +113,5 @@ do
         qsub -N hap_cluster_$i -W depend=afterany:$ID_sseq_align3 pipeline/hap_cluster.sh
 done
 
+echo "Finish time"
+date
