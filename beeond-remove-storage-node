@@ -29,27 +29,37 @@ while true; do
     echo "Node is now in emergency pool and no new data is written to it."							   #If in state emergency stop the loop and start migration process
     break
   fi
+
+  if [[ $POOL_STATE == "" ]]; then
+    echo "Something went wrong, node to remove is not registered anymore by the BeeOND storage system"
+    EMPTY_POOL_STATE="empty"
+    break
+  fi
+
   echo "Pool is in state" $POOL_STATE ", waiting to change into state emergency" 						   #If not in state emergency wait 10s and check again
   sleep 10
 done
 
 # Start the migration of the data residing on the blocked target which should be removed
-MIGARTING_DISK_SPACE=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME df | grep mnt | awk '{print $3}')	   #Parse out the amount of diskspace needed to migrate with normal df command  
-DISAPPEARING_DISK_SPACE=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME df | grep mnt | awk '{print $2}')  #Parse out the amount of diskspace needed that will vanish  
-BEFORE_REMOVAL_AVAILABLE_BEEOND_SPACE=$(df | grep beegfs_ondemand | awk '{print $4}')						   #Parse out the amount of the remaining diskspace
-AFTER_REMOVAL_AVAILABLE_BEEOND_SPACE=$(expr $BEFORE_REMOVAL_AVAILABLE_BEEOND_SPACE - $DISAPPEARING_DISK_SPACE)			   #Calculate the amount of the effective remaining space
 
-# Check if enough space is left for the data that should be migrated
-if [[ $AFTER_REMOVAL_AVAILABLE_BEEOND_SPACE -gt $MIGRATING_DISK_SPACE ]]; 				#Check that migration space is lower than available space
-then
-        echo "Migration is started"
-	beegfs-ctl --migrate --mount=/beeond --nodeid=$BEEGFS_NODE_ID /beeond/		#Start migration of the data
-	echo "Migration is finished"
-else
-	echo "Migration not possible, not enough space on target volume, please free some space."	#Do not start migration if not enough space is available
-	exit 0
+if [[ $POOL_STATE == "emergency" ]]; then
+
+	MIGARTING_DISK_SPACE=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME df | grep mnt | awk '{print $3}')	   #Parse out the amount of diskspace needed to migrate with normal df command  
+	DISAPPEARING_DISK_SPACE=$(ssh -n -o StrictHostKeyChecking=no -i $SSH_KEY_PATH centos@$NODE_NAME df | grep mnt | awk '{print $2}')  #Parse out the amount of diskspace needed that will vanish  
+	BEFORE_REMOVAL_AVAILABLE_BEEOND_SPACE=$(df | grep beegfs_ondemand | awk '{print $4}')						   #Parse out the amount of the remaining diskspace
+	AFTER_REMOVAL_AVAILABLE_BEEOND_SPACE=$(expr $BEFORE_REMOVAL_AVAILABLE_BEEOND_SPACE - $DISAPPEARING_DISK_SPACE)			   #Calculate the amount of the effective remaining space
+
+	# Check if enough space is left for the data that should be migrated
+	if [[ $AFTER_REMOVAL_AVAILABLE_BEEOND_SPACE -gt $MIGRATING_DISK_SPACE ]]; 				#Check that migration space is lower than available space
+	then
+        	echo "Migration is started"
+		beegfs-ctl --migrate --mount=/beeond --nodeid=$BEEGFS_NODE_ID /beeond/		#Start migration of the data
+		echo "Migration is finished"
+	else
+		echo "Migration not possible, not enough space on target volume, please free some space."	#Do not start migration if not enough space is available
+		exit 0
+	fi
 fi
-
 # Remove node from the beeond shared filesystem
 sudo beegfs-ctl --removenode --nodetype=storage --mount=/beeond $BEEGFS_NODE_ID		#Remove node from shared filesystem (root access required)
 
