@@ -7,7 +7,7 @@ date
 download=200
 for i in $(seq 1 $download)
 do
-	ID_download=$(qsub -N download_$i pipeline_mod/download.sh)
+	ID_download=$(qsub -N download_$i pipeline_mod/download_static.sh)
 done
 
 
