@@ -10,7 +10,12 @@ library(sjmisc)
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_17_11_20_pipeline_mod_static_10800_empty_history_initial_cluster_4min"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_18_11_20_pipeline_mod_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_19_11_20_pipeline_mod_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
-filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_19_11_20_pipeline_mod_static_10800_full_history_full_cluster_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_19_11_20_pipeline_mod_static_10800_full_history_full_cluster_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_20_11_20_pipeline_mod_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_20_11_20_pipeline_mod_static_full_cluster_no_scaling_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_23_11_20_pipeline_mod_static_full_cluster_no_scaling_3min_corrected_walltimes"
+filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_23_11_20_pipeline_mod_static_full_cluster_no_scaling_5min_corrected_walltimes"
+
 
 conn      <- file(filepath,open="r")
 logfile   <- readLines(conn)
