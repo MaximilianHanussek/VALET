@@ -91,7 +91,7 @@ beeond start -i /home/centos/beeond.statusfile -f /opt/beegfs/sbin -n /home/cent
 echo "Starting torque cluster system"
 cat /etc/hosts | grep "unicore-compute" | awk '{print $2}' > /home/centos/host_name_list                #Get the list of all known compute nodes on the masternode
 
-#sudo sed -i "/^help_starving_jobs/c\help_starving_jobs     false    ALL" /var/spool/torque/sched_priv/sched_config      #Change starving jobs recognition option to false
+sudo sed -i "/^help_starving_jobs/c\help_starving_jobs     false    ALL" /var/spool/torque/sched_priv/sched_config      #Change starving jobs recognition option to false
 
 sudo systemctl enable pbs_server                                                    #Enable torque pbs_server component
 sudo systemctl start pbs_server                                                     #Start torque pbs_server component
