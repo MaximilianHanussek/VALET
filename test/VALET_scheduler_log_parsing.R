@@ -26,8 +26,9 @@ library(sjmisc)
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_26_11_20_pipeline_mod2_static_full_cluster_no_scaling_5min"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_30_11_20_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_30_11_20_try2_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
-filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_01_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
-
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_01_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_01_12_20_try2_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
+filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_30_11_20_pipeline_mod2_static_full_cluster_no_scaling_5min"
 
 conn      <- file(filepath,open="r")
 logfile   <- readLines(conn)
@@ -36,7 +37,7 @@ time_vector <- c()
 
 for (i in 1:length(logfile)){
   split_line <- str_split(logfile[i], " ", 3, simplify = TRUE)
-  time_vector <- c(time_vector, (split_line[2]))
+  time_vector <- c(time_vector, paste(split_line[1], split_line[2]))
 }
 
 unique_time_vector <- unique(time_vector)
