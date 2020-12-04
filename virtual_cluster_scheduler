@@ -37,11 +37,13 @@ done
 echo "$logtime Max. number of cores available (free and used): " $cluster_CPU_capacity
 
 cluster_nodes_capacity_array=($(sudo cat /var/spool/torque/server_priv/nodes | awk '{print $1}'))       #Get number of nodes from torque file as array
-cluster_nodes_capacity=0                                                                                #Initialize number of nodes available variable
-for i in "${cluster_nodes_capacity_array[@]}"                                                           #Iterate over nodes number array
-do
-    cluster_nodes_capacity=$( echo $cluster_nodes_capacity + 1 | bc -l)                                 #Sum up the number of nodes currently available
-done
+cluster_nodes_capacity=${#cluster_nodes_capacity_array[@]}						#Get length of array, equals number of nodes
+
+#cluster_nodes_capacity=0                                                                                #Initialize number of nodes available variable
+#for i in "${cluster_nodes_capacity_array[@]}"                                                           #Iterate over nodes number array
+#do
+#    cluster_nodes_capacity=$( echo $cluster_nodes_capacity + 1 | bc -l)                                 #Sum up the number of nodes currently available
+#done
 echo "$logtime Number of nodes: " $cluster_nodes_capacity
 
 

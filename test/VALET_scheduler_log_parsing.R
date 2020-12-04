@@ -28,7 +28,12 @@ library(sjmisc)
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_30_11_20_try2_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_01_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_01_12_20_try2_pipeline_mod_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
-filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_30_11_20_pipeline_mod2_static_full_cluster_no_scaling_5min"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_30_11_20_pipeline_mod2_static_full_cluster_no_scaling_5min"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_02_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_1min_corrected_walltimes"
+filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_03_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_1min_corrected_walltimes"
+
+
+
 
 conn      <- file(filepath,open="r")
 logfile   <- readLines(conn)
@@ -96,13 +101,20 @@ for (i in 1:length(unique_time_vector)){
 close(conn)
 
 ratio_used_cores <- c()
+used_cores_only <- c()
+available_cores_only <- c()
 for (i in 1:length(used_cores)) {
   if (used_cores[i] == "NA") {
     ratio_used_cores <- c(ratio_used_cores, 
                           as.numeric(str_split(used_cores[i-1], "/", simplify = TRUE)[1]) / as.numeric(str_split(used_cores[i-1], "/", simplify = TRUE)[2]))
+    used_cores_only <- c(used_cores_only, str_split(used_cores[i-1], "/", simplify = TRUE)[1] )
+    available_cores_only <- c(available_cores_only, str_split(used_cores[i-1], "/", simplify = TRUE)[2])
+    
   } else {
     ratio_used_cores <- c(ratio_used_cores,
                           as.numeric(str_split(used_cores[i], "/", simplify = TRUE)[1]) / as.numeric(str_split(used_cores[i], "/", simplify = TRUE)[2]))
+    used_cores_only <- c(used_cores_only, str_split(used_cores[i], "/", simplify = TRUE)[1])
+    available_cores_only <- c(available_cores_only, str_split(used_cores[i], "/", simplify = TRUE)[2])
     }
 }
 
@@ -114,3 +126,6 @@ value <- seq(1, length(number_of_nodes))
 plot(x=value, y=number_of_nodes, type="o", ylim=c(1, 10), ylab="Number of used nodes", xlab="Timestep", pch=20)
 
 plot(x=value, y=ratio_used_cores, type="o", ylab="Core usage ratio", xlab="Timestep", pch=20)
+
+plot(x=value, y=used_cores_only, type="o", ylab="Number of used cores", xlab="Timestep", pch=20, lty=1)
+lines(x=value, y=available_cores_only, col="red", lty=2)
