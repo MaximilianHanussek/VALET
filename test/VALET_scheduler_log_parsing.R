@@ -39,8 +39,13 @@ library(sjmisc)
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod/VALET_scheduler_log_10_12_20_pipeline_mod_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_11_12_20_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_16_12_20_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
-filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_16_12_20_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
-
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_12_01_21_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_22_03_21_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_26_03_21_pipeline_mod2_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_12_04_21_pipeline_mod2_static_10800_empty_history_initial_cluster_5min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_20_04_21_pipeline_mod2_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
+filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_26_04_21_pipeline_mod2_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_28_04_21_pipeline_mod2_static_10800_empty_history_initial_cluster_4min_corrected_walltimes"
 
 
 conn      <- file(filepath,open="r")
@@ -137,3 +142,12 @@ plot(x=value, y=ratio_used_cores, type="o", ylab="Core usage ratio", xlab="Times
 
 plot(x=value, y=used_cores_only, type="o", ylab="Number of used cores", xlab="Timestep", pch=20, lty=1)
 lines(x=value, y=available_cores_only, col="red", lty=2)
+
+print("Mean number of nodes:")
+print(mean(to_numeric(number_of_nodes)))
+
+print("Mean number of used cores only:")
+print(mean(to_numeric(used_cores_only)))
+
+print("Mean number of available cores only:")
+print(mean(to_numeric(available_cores_only)))
