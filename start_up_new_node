@@ -36,6 +36,7 @@ SSH_PATH_LOCAL="/home/centos/.ssh/connection_key.pem"													#Get path to i
 SSH_PATH_MASTER=$(awk '/private_key_path/{getline; print}' terraform/vars.tf | awk -F ' = "' '{print $2}' | head -c -2)					#Get path to SSH key to master node
 
 ssh -n -o StrictHostKeyChecking=no -i $SSH_PATH_MASTER centos@$IP_MASTER_NODE "add_node_to_cluster $NEW_NODE_IP $NEW_NODE_HOSTNAME $SSH_PATH_LOCAL"	#Start new node over script on master node
+ssh -n -o StrictHostKeyChecking=no -i $SSH_PATH_MASTER centos@$IP_MASTER_NODE "sudo rm -f /home/centos/.VALET_status"	#Remove state file with blocked key word
 
 terraform state mv -state=terraform_add_node/terraform.tfstate -state-out=terraform/terraform.tfstate openstack_compute_instance_v2.compute openstack_compute_instance_v2.compute[$next_node_number]
 
