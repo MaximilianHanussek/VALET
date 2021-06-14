@@ -107,6 +107,8 @@ done </home/centos/host_name_list                                               
 rm -f /home/centos/host_name_list                                                   #Delete generated host_ip_list
 
 sudo env "PATH=$PATH" qmgr -c "set server auto_node_np = True"                      #Set the correct amount of CPUs automatically
+sudo env "PATH=$PATH" qmgr -c "set server scheduler_iteration = 60"					#Set time scheduler looks for new resources every minute
+sudo env "PATH=$PATH" qmgr -c "set server keep_completed = 36000"					#Set time completed jobs are kept in history to 36000s -> 10h
 
 
 ### Configure and Start UNICORE components ###
