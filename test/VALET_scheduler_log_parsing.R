@@ -55,8 +55,8 @@ library(sjmisc)
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_19_05_21_pipeline_mod2_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_25_05_21_pipeline_mod2_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
 #filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_27_05_21_pipeline_mod2_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
-filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_11_06_21_pipeline_mod2_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
-
+#filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_11_06_21_pipeline_mod2_static_10800_empty_history_initial_cluster_2min_corrected_walltimes"
+filepath <- "/home/mhanussek/Dokumente/VALET_scheduler_simulations/pipeline_mod2/VALET_scheduler_log_14_06_21_pipeline_mod2_static_36000_empty_history_initial_cluster_2min_corrected_walltimes_sched_60"
 
 
 conn      <- file(filepath,open="r")
