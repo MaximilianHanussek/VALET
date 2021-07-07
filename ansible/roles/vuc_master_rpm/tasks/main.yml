@@ -103,14 +103,6 @@
   become: yes
 
 - name: Install TORQUE packages
-  command: rpm -i /opt/torque-debuginfo-6.1.3-2.adaptive.el7.x86_64.rpm
-  become: yes
-
-- name: Install TORQUE packages
-  command: rpm -i /opt/torque-devel-6.1.3-2.adaptive.el7.x86_64.rpm
-  become: yes
-
-- name: Install TORQUE packages
   command: rpm -i /opt/torque-scheduler-6.1.3-2.adaptive.el7.x86_64.rpm
   become: yes
 
@@ -133,12 +125,6 @@
 - name: Stop pbs_sched
     systemd:
     name: pbs_sched
-    state: stopped
-    enabled: no
-
-- name: Stop pbs_mom
-  systemd:
-    name: pbs_mom
     state: stopped
     enabled: no
 
