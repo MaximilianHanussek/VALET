@@ -43,9 +43,17 @@
 
 
 - name: Install packages
-  #with_items: "{{ common_packages | mandatory }}"
   yum:
-    name: "{{ common_packages | mandatory }}"
+    name:
+      - curl
+      - wget
+      - htop
+      - java
+      - bc
+      - libxml2-devel
+      - boost-devel
+      - openssl-devel
+      - python-pip
     state: latest
     disable_gpg_check: 1
   become: yes
