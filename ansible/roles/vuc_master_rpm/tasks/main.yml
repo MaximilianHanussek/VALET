@@ -123,7 +123,7 @@
     enabled: no
 
 - name: Stop pbs_sched
-    systemd:
+  systemd:
     name: pbs_sched
     state: stopped
     enabled: no
