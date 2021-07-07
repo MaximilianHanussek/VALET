@@ -29,7 +29,10 @@
 
 - name: Install packages
   yum:
-    name: "{{ common_packages | mandatory }}"
+    name:
+      - curl
+      - wget
+      - htop
     state: latest
     disable_gpg_check: 1
   become: yes
