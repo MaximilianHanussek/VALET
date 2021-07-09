@@ -73,6 +73,11 @@
     line: unicore-master
   become: yes
 
+- name: Delete torque mom config file
+  file: path=/var/spool/torque/mom_priv/config
+  state: absent
+  become: yes
+
 - name: Create empty torque mom config file
   file: path=/var/spool/torque/mom_priv/config state=touch
   become: yes  
@@ -96,5 +101,5 @@
 - name: Clear centos history
   command: echo "" > /home/centos/.bash_history
 
-- name: Clear authorized_keys file
-  shell: echo "" > /home/centos/.ssh/authorized_keys
+#- name: Clear authorized_keys file
+#  shell: echo "" > /home/centos/.ssh/authorized_keys
