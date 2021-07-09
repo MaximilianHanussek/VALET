@@ -100,5 +100,5 @@
 - name: Clear centos history
   command: echo "" > /home/centos/.bash_history
 
-#- name: Clear authorized_keys file
-#  shell: echo "" > /home/centos/.ssh/authorized_keys
+- name: Clear authorized_keys file
+  shell: echo "" > /home/centos/.ssh/authorized_keys
