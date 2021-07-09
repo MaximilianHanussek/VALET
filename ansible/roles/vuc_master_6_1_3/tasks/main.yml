@@ -57,7 +57,7 @@
       - hwloc
       - hwloc-devel
       - pam-devel
-
+      - libcgroup-tools
     state: latest
     disable_gpg_check: 1
   become: yes
