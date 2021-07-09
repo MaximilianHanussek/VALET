@@ -74,8 +74,7 @@
   become: yes
 
 - name: Delete torque mom config file
-  file: path=/var/spool/torque/mom_priv/config
-  state: absent
+  file: path=/var/spool/torque/mom_priv/config state=absent
   become: yes
 
 - name: Create empty torque mom config file
